@@ -1,4 +1,4 @@
-# UR5e Master-Slave Teleoperation Data Collection Guide
+# UR5e Master-Slave Teleoperation Data Collection
 ## 1. Environment Setup
 ### 1.1 Create and Activate Conda Environment
 ```bash
