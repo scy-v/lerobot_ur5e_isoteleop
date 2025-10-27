@@ -69,7 +69,6 @@ class RecordConfig:
         # Teleop config
         self.port = dxl_cfg["port"]
         self.joint_ids = dxl_cfg["joint_ids"]
-        self.start_joints = teleop["start_joints"]
         self.joint_signs = dxl_cfg["joint_signs"]
 
         # Robot config
