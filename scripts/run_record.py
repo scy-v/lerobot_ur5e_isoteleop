@@ -13,7 +13,7 @@ from lerobot.utils.control_utils import init_keyboard_listener
 from lerobot.datasets.lerobot_dataset import LeRobotDataset
 from lerobot.datasets.utils import hw_to_dataset_features
 import logging
-logging.basicConfig(level=logging.WARNING, format="%(message)s")
+logging.basicConfig(level=logging.INFO, format="%(message)s")
 
 class RecordConfig:
     def __init__(self, cfg: Dict[str, Any]):
@@ -130,7 +130,7 @@ def main(record_cfg: RecordConfig):
 
     episode_idx = 0
     while episode_idx < record_cfg.num_episodes and not events["stop_recording"]:
-        log_say(f"Recording episode {episode_idx + 1} of {record_cfg.num_episodes}", play_sounds=False)
+        logging.info(f"Recording episode {episode_idx + 1} of {record_cfg.num_episodes}")
         record_loop(
             robot=robot,
             events=events,
@@ -147,7 +147,7 @@ def main(record_cfg: RecordConfig):
 
         # Reset the environment if not stopping or re-recording
         if not events["stop_recording"] and (episode_idx < record_cfg.num_episodes - 1 or events["rerecord_episode"]):
-            log_say("Reset the environment", play_sounds=False)
+            logging.info("Reset the environment")
             record_loop(
                 robot=robot,
                 events=events,
@@ -162,7 +162,7 @@ def main(record_cfg: RecordConfig):
             )
 
         if events["rerecord_episode"]:
-            log_say("Re-recording episode", play_sounds=False)
+            logging.info("Re-recording episode")
             events["rerecord_episode"] = False
             events["exit_early"] = False
             dataset.clear_episode_buffer()
@@ -172,7 +172,7 @@ def main(record_cfg: RecordConfig):
         episode_idx += 1
 
     # Clean up
-    log_say("Stop recording", play_sounds=False)
+    logging.info("Stop recording")
     robot.disconnect()
     teleop.disconnect()
     dataset.finalize()

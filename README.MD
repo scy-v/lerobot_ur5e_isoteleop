@@ -9,6 +9,7 @@ conda activate ur_data
 ### 1.2 Install lerobot
 ```bash
 # Install specific version 0.3.4
+# git checkout da5d2f3e9187fa4690e6667fe8b294cae49016d6
 git clone https://github.com/huggingface/lerobot.git
 pip install -e lerobot
 ```
@@ -73,4 +74,13 @@ python scripts/run_replay.py # Make sure cfg.yaml is properly configured
 ## 5. Dataset Visualization
 ```bash
 python scripts/run_visualize.py # Make sure cfg.yaml is properly configured
+```
+
+## 6. Merge Datasets
+If you recorded data in multiple stages, ensure each dataset has a unique `repo_id`. Use the following command to merge them into a single dataset:
+```bash
+lerobot-edit-dataset 
+    --repo_id <merged_repo_id> 
+    --operation.type merge 
+    --operation.repo_ids "[<repo_id_1>, <repo_id2>]"
 ```
