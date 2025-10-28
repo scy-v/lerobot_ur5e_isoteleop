@@ -82,5 +82,5 @@ If you recorded data in multiple stages, ensure each dataset has a unique `repo_
 lerobot-edit-dataset 
     --repo_id <merged_repo_id> 
     --operation.type merge 
-    --operation.repo_ids "[<repo_id_1>, <repo_id2>]"
+    --operation.repo_ids "['<repo_id_1>', '<repo_id2>']"
 ```
