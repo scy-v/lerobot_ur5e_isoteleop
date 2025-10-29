@@ -68,7 +68,7 @@ huggingface-cli whoami  # 检查是否登录成功
 ```bash
 python scripts/run_record.py
 ```
-
+![record_image](assets/record.png)
 
 ## 4. 数据集回放
 ```bash
@@ -79,6 +79,7 @@ python scripts/run_replay.py #注意cfg配置
 ```bash
 python scripts/run_visualize.py #注意cfg配置
 ```
+![record_image](assets/visualize.png)
 
 ## 6. 数据集追加与恢复
 如果你已经在指定的 `repo_id` 下录制过数据集，可以在 `cfg.yaml` 中将 `resume` 设置为 `True`，以在现有数据集的基础上继续录制新的数据。然后运行以下命令：

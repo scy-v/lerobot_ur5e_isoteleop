@@ -65,6 +65,7 @@ huggingface-cli whoami  # Verify successful login
 ```bash
 python scripts/run_record.py
 ```
+![record_image](assets/record.png)
 
 ## 4. Dataset Playback
 ```bash
@@ -75,6 +76,7 @@ python scripts/run_replay.py # Make sure cfg.yaml is properly configured
 ```bash
 python scripts/run_visualize.py # Make sure cfg.yaml is properly configured
 ```
+![record_image](assets/visualize.png)
 
 ## 6. Dataset Appending and Resume
 If you already recorded an old dataset with `repo_id`, set `resume: True` in `cfg.yaml`to append recording new data to the same dataset. Then, run the following command:
