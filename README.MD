@@ -36,7 +36,7 @@ For example, map the gripper to `/dev/ur5e_left_gripper`:
 bash scripts/map_gripper.sh <gripper_port_name>
 ```
 ### 2.3 Obtain Master-Slave Joint Angle Offset Circle
-**⚠️ WARNING: Before recording data, you must complete this step to set the correct joint offset. Otherwise, the slave arm may move unexpectedly.**
+> **⚠️ WARNING: Before recording data, you must complete this step to set the correct joint offset. Otherwise, the slave arm may move unexpectedly.**
 
 
 Manually move the master arm so that its joint angles roughly match the current joint angles of the slave arm. This is done to calculate the joint angle offset cycle between the master and slave arms. Then run:
