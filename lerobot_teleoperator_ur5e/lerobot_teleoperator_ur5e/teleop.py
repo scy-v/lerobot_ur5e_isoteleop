@@ -93,7 +93,7 @@ class UR5eTeleop(Teleoperator):
         logger.info(f"[INFO] ===== All {self.name} connections have been closed =====")
 
 if __name__ == "__main__":
-
+    import numpy as np
     logging.basicConfig(level=logging.INFO, format='%(message)s')
     logger = logging.getLogger(__name__)
 
@@ -126,3 +126,6 @@ if __name__ == "__main__":
     )
     teleop = UR5eTeleop(teleop_config)
     teleop.connect()
+    # teleop.dynamixel_robot._driver.set_operating_mode(3)
+    # teleop.dynamixel_robot.set_torque_mode(True)
+    # teleop.dynamixel_robot.command_joint_state(np.array([3.141129970550537, -2.003148218194479, 1.5803211371051233, -1.1479324859431763, -1.5713160673724573, -0.00014955202211552887, 3]))
