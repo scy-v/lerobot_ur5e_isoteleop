@@ -8,7 +8,7 @@ record:
       port: "/dev/serial/by-id/usb-FTDI_FT232R_USB_UART_A50285BI-if00-port0"
       use_gripper: True 
       joint_ids: [1, 2, 3, 4, 5, 6]
-      joint_offsets:  #[0.0, 4.712, 4.712, 4.712, 4.712, 3.142]
+      joint_offsets: [0.0, 4.712, 4.712, 4.712, 4.712, 6.283] #[0.0, 4.712, 4.712, 4.712, 4.712, 3.142]
       joint_signs: [1, 1, -1, 1, 1, 1]
       gripper_config: [7, 2.5157, 3.4790] # id, min, max
       
