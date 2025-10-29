@@ -39,6 +39,8 @@ bash scripts/map_gripper.sh <gripper_port_name>
 ```
 
 ### 2.3 获取主臂-从臂关节角的误差周期
+**⚠️ 注意：在记录数据前，务必完成此步骤以设置正确的误差周期。否则，从臂可能发生意外的动作。**
+
 在执行此操作前，请先手动拖动主臂，使其关节角与从臂的当前关节角尽量保持一致。然后运行以下命令来计算主臂与从臂关节角的误差周期：
 ```bash
 python scripts/teleop_joint_offsets.py
