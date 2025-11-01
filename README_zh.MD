@@ -33,22 +33,25 @@ python scripts/rs_devices.py
 ```
 
 ### 2.2 固定夹爪串口映射
-例如，将夹爪映射到 `/dev/ur5e_left_gripper`：
+例如，将夹爪映射到 `/dev/ur5e_left_gripper`, 执行此操作前，请确保仅连接一个夹爪的usb设备。
 ```bash
 bash scripts/map_gripper.sh <gripper_port_name>
 ```
-
-### 2.3 获取主臂-从臂关节角的误差周期
+随后，将设定的映射值填入`cfg.yaml`中的`gripper_port`字段
+### 2.3 获取主臂的固定串口标识符
+执行此操作前，请确保仅连接一个主臂的usb设备。
+```bash
+bash scripts/check_master_port.sh
+```
+随后，将获取的串口标识符填入`cfg.yaml`中的`port`字段
+### 2.4 获取主臂-从臂关节角的误差周期
 > **⚠️ 注意：在记录数据前，务必完成此步骤以设置正确的误差周期。否则，从臂可能发生意外的动作。**
 
 在执行此操作前，请先手动拖动主臂，使其关节角与从臂的当前关节角尽量保持一致。然后运行以下命令来计算主臂与从臂关节角的误差周期：
 ```bash
 python scripts/teleop_joint_offsets.py
 ```
-随后，请将脚本输出的`joint_offsets`值填入`config/cfg.yaml`中的对应配置项
-
-### 2.4 配置其他参数
-打开 `config/cfg.yaml` 文件，查看并修改所有必要参数，确保后续步骤正常运行。
+随后，请将脚本输出的`joint_offsets`值填入`cfg.yaml`中的对应配置项
 
 ## 3. 数据集记录
 
@@ -66,7 +69,7 @@ huggingface-cli whoami  # 检查是否登录成功
 ### 3.2 开始记录
 1. 打开 UR5e 示教器上的 **Remote Control**。
 2. 确认 `cfg.yaml` 中参数配置正确。
-3. 运行以下命令开始记录数据：
+3. 为了确保数据收集过程规范，请先阅读 `9. 数据集命名与记录详解` 以了解数据记录细节，然后再运行以下命令：
 ```bash
 python scripts/run_record.py
 ```
@@ -84,7 +87,7 @@ python scripts/run_visualize.py #注意cfg配置
 ![record_image](assets/visualize.png)
 
 ## 6. 数据集追加与恢复
-如果你已经在指定的 `repo_id` 下录制过数据集，可以在 `cfg.yaml` 中将 `resume` 设置为 `True`，以在现有数据集的基础上继续录制新的数据。然后运行以下命令：
+如果你已经在指定的 `repo_id` 下录制过数据集，可以在 `cfg.yaml` 中将 `resume` 设置为 `True`，并在 `resume_dataset` 中填写要追加的数据集名称，以便在现有数据集的基础上继续录制。然后运行以下命令：
 ```bash
 python scripts/run_record.py
 ```
@@ -97,14 +100,36 @@ lerobot-edit-dataset
     --operation.type merge 
     --operation.repo_ids "['<repo_id_1>', '<repo_id2>']"
 ```
+
 ## 8. 录制控制按键说明
 1. **右方向键**  
-   - 按下后：结束当前 episode 的录制并保存数据
-   - 系统会自动进入 **复位（reset）** 阶段，请通过主臂将从臂归位初始位姿
-   - 再次按下：开始录制下一个 episode
+   1. 按下右方向键: 结束当前 episode 的录制并保存数据，程序将暂停等待。
+   2. 进入**复位**阶段: 按任意键以继续（此时从臂会直接跟随主臂运动），请通过主臂将从臂复位至初始位姿。
+   3. 再次按下右方向键，开始录制下一个episode
 
-2. **左方向键**  
+1. **左方向键**  
    - 按下后：重新开始当前 episode 的录制
 
-3. **Esc 键**  
+2. **Esc 键**  
    - 按下后：退出整个录制任务，并保存当前已录制的数据
+
+## 9. 数据集命名与记录详解
+### 1. 数据集命名
+1. 数据集默认保存在 `~/.cache/huggingface/lerobot` 目录下。
+2. 数据集命名格式为 `[description]_[date]_[version]`。其中：
+   - `description` 来源于 `cfg.yaml` 中的 `repo_id=<user_name>/<description>`；
+   - `date` 会自动生成；
+   - `version` 会根据是否存在同名数据集( `repo_id` 相同)自动生成新版本号。
+3. description 命名规则：`task.description -> Verb_SourceObject_prep_TargetObject_additionalInfo`。  
+   即将 `cfg.yaml` 中的 `task.description` 按照上述格式映射生成。例如：  
+   `Pick up the green cube and put it into the trash bin -> pick_greencube_into_trashbin`。
+
+### 2. 数据记录说明
+1. 完成步骤 `2. 获取和配置必要参数`。
+2. 根据任务内容，在 `cfg.yaml` 的 `task.description` 中填写指令，并根据数据集命名规则设置 `repo_id`。
+3. 检查并调整 `cfg.yaml` 中的其他参数，确保配置正确。
+4. 运行命令 `python scripts/run_record.py`，为确保安全， 请保证主臂与从臂关节角近似，`run_record` 会自动执行 `2.4 获取主臂-从臂关节角误差周期` 检查，然后按照 `8. 录制控制按键说明` 完成录制操作。
+5. 数据记录结束后，数据集同级目录会生成 `dataset_info.txt` 文件，用于保存本地数据集信息。如果手动删除过数据集，可通过以下命令更新记录信息：
+```bash
+python scripts/check_dataset_info.py
+```

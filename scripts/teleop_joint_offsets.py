@@ -44,8 +44,12 @@ def compute_joint_offsets(cfg, start_joints: List[float]):
 
     # Compute best offsets
     curr_joints = driver.get_joints()
-    best_offsets = []
 
+    # Close driver
+    driver.close()
+
+    best_offsets = []
+    
     for i in range(len(cfg.joint_ids)):
         best_offset = 0
         best_error = float('inf')
@@ -57,6 +61,8 @@ def compute_joint_offsets(cfg, start_joints: List[float]):
         best_offsets.append(float(best_offset))
 
     logger.info("Joint offsets: %s", [round(x, 3) for x in best_offsets])
+
+    return [round(x, 3) for x in best_offsets]
 
 # ------------------------ Config Loader ------------------------ #
 class RecordConfig:
@@ -74,13 +80,17 @@ class RecordConfig:
         # Robot config
         self.robot_ip: str = robot["ip"]
 
+def main(record_cfg):
+    start_joints = get_start_joints(record_cfg)
+    if start_joints:
+        return compute_joint_offsets(record_cfg, start_joints)
+    else:
+        raise RuntimeError("Failed to retrieve start joints from UR5e robot.")
+
 # ------------------------ Main ------------------------ #
 if __name__ == "__main__":
     cfg_path = Path(__file__).parent / "config" / "cfg.yaml"
     with open(cfg_path, 'r') as f:
         cfg = yaml.safe_load(f)
-
     record_cfg = RecordConfig(cfg["record"])
-    start_joints = get_start_joints(record_cfg)
-    if start_joints:
-        compute_joint_offsets(record_cfg, start_joints)
+    main(record_cfg)

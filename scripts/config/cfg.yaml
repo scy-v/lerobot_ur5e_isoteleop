@@ -1,33 +1,36 @@
 record:
-  repo_id: &repo_id "scylearning/ur5e_isoteleop" #huggingface repo: <hf_username>/<dataset_repo_id>
+  repo_id: &repo_id "scylearning/pick_greencube_into_trashbin_umi" 
+  # Suggested format: <hf_username>/<description>, description = task.description -> Verb_SourceObject_prep_TargetObject_additionalInfo
+  # e.g. Pick up the green cube and put it into the trash bin -> pick_greencube_into_trashbin
   fps: 15 # dataset and camera frame rate
 
   teleop:
     control_mode: "isoteleop"
     dynamixel_config:
       port: "/dev/serial/by-id/usb-FTDI_FT232R_USB_UART_A50285BI-if00-port0"
-      use_gripper: True 
+      use_gripper: &use_gripper True # whether the slave robot can use gripper
       joint_ids: [1, 2, 3, 4, 5, 6]
-      joint_offsets: [0.0, 4.712, 4.712, 4.712, 4.712, 6.283] #[0.0, 4.712, 4.712, 4.712, 4.712, 3.142]
+      joint_offsets: [0.0, 4.712, 4.712, 4.712, 4.712, 0.0] #[0.0, 4.712, 4.712, 4.712, 4.712, 3.142]
       joint_signs: [1, 1, -1, 1, 1, 1]
       gripper_config: [7, 2.5157, 3.4790] # id, min, max
       
   robot:
     ip: &ip "192.168.131.11" # robot_ip
-    use_gripper: True # whether to use gripper
+    use_gripper: *use_gripper 
     gripper_port: &gripper_port "/dev/ur5e_left_gripper" # gripper_port
-    gripper_reverse: True  # 1=open, 0=close
+    gripper_reverse: False  # If gripper moves opposite, flip this value
 
   task:
-    description: "Pick up the red cube and place it on the blue cube." # task description
-    num_episodes: 1 # number of episodes to record
+    description: "Pick up the green cube and put it into the trash bin." # task description
+    num_episodes: 10 # number of episodes to record
     display: True # Whether to display the data during recording
-    resume: False
+    resume: false
+    resume_dataset: scylearning/pick_greencube_into_trashbin_umi_20251101_v02 # dataset to resume from if resume is True
 
   time:
-    episode_time_sec: 600 # max time per episode in seconds
-    reset_time_sec: 60 # max time to reset between episodes in seconds
-    save_meta_period: 1 # Save metadata after every N episodes
+    episode_time_sec: 6000 # max time per episode in seconds
+    reset_time_sec: 6000 # max time to reset between episodes in seconds
+    save_meta_period: 10 # Save metadata after every N episodes
 
   cameras:
     wrist_cam_serial: "332322070928" # wrist camera serial number

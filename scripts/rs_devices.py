@@ -1,10 +1,6 @@
-"""
-list_realsense_devices.py
-
-扫描系统中连接的 Intel RealSense 相机，打印数量和序列号。
-"""
 import pyrealsense2 as rs
 
+# List the connected Intel RealSense cameras and print their serial numbers.
 def list_realsense_devices():
     ctx = rs.context()
     devices = ctx.devices

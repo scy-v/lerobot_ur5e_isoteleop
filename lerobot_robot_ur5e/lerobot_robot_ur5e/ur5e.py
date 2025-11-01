@@ -28,10 +28,11 @@ class UR5e(Robot):
         self._initial_pose = None
         self._prev_observation = None
         self._num_joints = 6
+        self._gripper_force = 20
         self._gripper_position = 1
         self._last_gripper_position = 1
-
-    def connect(self, calibrate: bool = True) -> None:
+        
+    def connect(self) -> None:
         if self.is_connected:
             raise DeviceAlreadyConnectedError(f"{self.name} is already connected.")
 
@@ -60,6 +61,7 @@ class UR5e(Robot):
         logger.info("\n===== [GRIPPER] Initializing gripper...")
         gripper = PGE(port)
         gripper.init_feedback()
+        gripper.set_force(self._gripper_force)
         logger.info("===== [GRIPPER] Gripper initialized successfully.\n")
         return gripper
 
@@ -122,6 +124,7 @@ class UR5e(Robot):
             "tcp_pose.p": float,
             "tcp_pose.y": float,
             "gripper_position": float,
+            "gripper_position_bin": int,
         }
 
     @property
@@ -141,9 +144,9 @@ class UR5e(Robot):
             raise DeviceNotConnectedError(f"{self} is not connected.")
 
         joint_positions = [action[f"joint_{i+1}.pos"] for i in range(self._num_joints)]
-        velocity = 0.5
-        acceleration = 0.5
-        dt = 1.0 / 500 
+        velocity = 0.5 # not used in current version
+        acceleration = 0.5 # not used in current version
+        dt = 0.002
         lookahead_time = 0.2
         gain = 100
         t_start = self._arm["rtde_c"].initPeriod()
@@ -175,7 +178,12 @@ class UR5e(Robot):
         for i, axis in enumerate(["x", "y", "z","r","p","y"]):
             obs_dict[f"tcp_pose.{axis}"] = tcp_pose[i]
 
-        obs_dict["gripper_position"] = self._gripper.pos 
+        if self.config.use_gripper:
+            obs_dict["gripper_position"] = self._gripper.pos 
+            obs_dict["gripper_position_bin"] = 0 if self._gripper.pos <= 0.98 else 1
+        else:
+            obs_dict["gripper_position"] = None
+            obs_dict["gripper_position_bin"] = None
 
         # Capture images from cameras
         for cam_key, cam in self.cameras.items():
@@ -183,6 +191,7 @@ class UR5e(Robot):
             obs_dict[cam_key] = cam.read()
             dt_ms = (time.perf_counter() - start) * 1e3
             logger.debug(f"{self} read {cam_key}: {dt_ms:.1f}ms")
+
         self._prev_observation = obs_dict
 
         return obs_dict

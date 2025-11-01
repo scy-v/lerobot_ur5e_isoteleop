@@ -113,10 +113,11 @@ class DynamixelRobot(Robot):
         for i in range(len(joint_state[:6])):
             obs_dict[f"joint_{i+1}.pos"] = joint_state[i]
 
-        if self._use_gripper:
-            return {
-                **obs_dict,
-                "gripper_position": joint_state[-1],  
-            }
-        else:
-            return obs_dict
+        if not self._use_gripper:
+            joint_state[-1] = None
+
+        return {
+            **obs_dict,
+            "gripper_position": joint_state[-1],  
+        }
+
