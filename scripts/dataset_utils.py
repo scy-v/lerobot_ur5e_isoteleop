@@ -1,9 +1,6 @@
 import re
 from pathlib import Path
 from datetime import datetime
-from colorama import Fore, Style, init
-
-init(autoreset=True)  
 
 def generate_dataset_name(cfg):
     """
