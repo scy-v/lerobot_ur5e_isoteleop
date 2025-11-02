@@ -73,11 +73,12 @@ huggingface-cli whoami  # Verify successful login
 ```bash
 ur5e-record
 ```
-<figure>
+
+<p align="center">
   <img src="assets/record.png" alt="Record" width="600">
-  <figcaption style="text-align: center; font-weight: bold; margin-top: 4px;">
-  Figure 1: Record</figcaption>
-</figure>
+  <br>
+  <b>Figure 1: Record</b>
+</p>
 
 ## 4. Dataset Replay
 ```bash
@@ -88,11 +89,11 @@ ur5e-replay # Make sure cfg.yaml is properly configured
 ```bash
 ur5e-visualize # Make sure cfg.yaml is properly configured
 ```
-<figure>
-  <img src="assets/visualize.png" alt="Robot Gripper" width="600">
-  <figcaption style="text-align: center; font-weight: bold; margin-top: 4px;">
-  Figure 2: Visualization</figcaption>
-</figure>
+<p align="center">
+  <img src="assets/visualize.png" alt="Visualization" width="600">
+  <br>
+  <b>Figure 2: Visualization</b>
+</p>
 
 ## 6. Dataset Appending and Resume
 If you have already recorded a dataset under the specified `repo_id`, set `resume: True` in `cfg.yaml` and enter the dataset name in `resume_dataset` to continue recording new data on the existing dataset. Then, run the following command:
@@ -125,17 +126,17 @@ lerobot-edit-dataset
 
 ## 9. Dataset Naming and Recording Details
 ### 1. Dataset Naming
-<figure>
-  <img src="assets/dataset.png" alt="Robot Gripper" width="600">
-  <figcaption style="text-align: center; font-weight: bold; margin-top: 4px;">
-  Figure 3: Dataset</figcaption>
-</figure>
+<p align="center">
+  <img src="assets/dataset.png" alt="dataset" width="600">
+  <br>
+  <b>Figure 3: Dataset</b>
+</p>
 
-<figure>
-  <img src="assets/dataset_info.png" alt="Robot Gripper" width="600">
-  <figcaption style="text-align: center; font-weight: bold; margin-top: 4px;">
-  Figure 4: Dataset Info</figcaption>
-</figure>
+<p align="center">
+  <img src="assets/dataset_info.png" alt="dataset_info" width="600">
+  <br>
+  <b>Figure 4: Dataset Info</b>
+</p>
 
 1. The dataset is by default stored in the `~/.cache/huggingface/lerobot` directory and contains three types of items:
 

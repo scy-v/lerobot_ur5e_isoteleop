@@ -72,11 +72,11 @@ huggingface-cli whoami  # 检查是否登录成功
 ```bash
 ur5e-record
 ```
-<figure>
+<p align="center">
   <img src="assets/record.png" alt="Record" width="600">
-  <figcaption style="text-align: center; font-weight: bold; margin-top: 4px;">
-  Figure 1: Record</figcaption>
-</figure>
+  <br>
+  <b>Figure 1: Record</b>
+</p>
 
 ## 4. 数据集回放
 ```bash
@@ -87,11 +87,11 @@ ur5e-replay #注意cfg配置
 ```bash
 ur5e-visualize #注意cfg配置
 ```
-<figure>
-  <img src="assets/visualize.png" alt="Robot Gripper" width="600">
-  <figcaption style="text-align: center; font-weight: bold; margin-top: 4px;">
-  Figure 2: Visualization</figcaption>
-</figure>
+<p align="center">
+  <img src="assets/visualize.png" alt="Visualization" width="600">
+  <br>
+  <b>Figure 2: Visualization</b>
+</p>
 
 ## 6. 数据集追加与恢复
 如果你已经在指定的 `repo_id` 下录制过数据集，可以在 `cfg.yaml` 中将 `resume` 设置为 `True`，并在 `resume_dataset` 中填写要追加的数据集名称，以便在现有数据集的基础上继续录制。然后运行以下命令：
@@ -122,17 +122,17 @@ lerobot-edit-dataset
 
 ## 9. 数据集命名与记录详解
 ### 1. 数据集命名
-<figure>
-  <img src="assets/dataset.png" alt="Robot Gripper" width="600">
-  <figcaption style="text-align: center; font-weight: bold; margin-top: 4px;">
-  Figure 3: Dataset</figcaption>
-</figure>
+<p align="center">
+  <img src="assets/dataset.png" alt="dataset" width="600">
+  <br>
+  <b>Figure 3: Dataset</b>
+</p>
 
-<figure>
-  <img src="assets/dataset_info.png" alt="Robot Gripper" width="600">
-  <figcaption style="text-align: center; font-weight: bold; margin-top: 4px;">
-  Figure 4: Dataset Info</figcaption>
-</figure>
+<p align="center">
+  <img src="assets/dataset_info.png" alt="dataset_info" width="600">
+  <br>
+  <b>Figure 4: Dataset Info</b>
+</p>
 
 1. 数据集默认保存在 `~/.cache/huggingface/lerobot` 目录下，包含三类内容：
 
