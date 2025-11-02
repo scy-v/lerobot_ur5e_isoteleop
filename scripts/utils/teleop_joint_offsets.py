@@ -80,7 +80,7 @@ class RecordConfig:
         # Robot config
         self.robot_ip: str = robot["ip"]
 
-def main(record_cfg):
+def run(record_cfg):
     start_joints = get_start_joints(record_cfg)
     if start_joints:
         return compute_joint_offsets(record_cfg, start_joints)
@@ -88,9 +88,10 @@ def main(record_cfg):
         raise RuntimeError("Failed to retrieve start joints from UR5e robot.")
 
 # ------------------------ Main ------------------------ #
-if __name__ == "__main__":
-    cfg_path = Path(__file__).parent / "config" / "cfg.yaml"
+def main():
+    parent_path = Path(__file__).resolve().parent
+    cfg_path = parent_path.parent / "config" / "cfg.yaml"
     with open(cfg_path, 'r') as f:
         cfg = yaml.safe_load(f)
     record_cfg = RecordConfig(cfg["record"])
-    main(record_cfg)
+    run(record_cfg)

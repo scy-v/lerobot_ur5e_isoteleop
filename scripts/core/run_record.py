@@ -1,7 +1,7 @@
 import yaml
 from pathlib import Path
 from typing import Dict, Any
-from dataset_utils import generate_dataset_name, update_dataset_info
+from scripts.utils.dataset_utils import generate_dataset_name, update_dataset_info
 from lerobot_robot_ur5e import UR5eConfig, UR5e
 from lerobot_teleoperator_ur5e import UR5eTeleopConfig, UR5eTeleop
 from lerobot.cameras.configs import ColorMode, Cv2Rotation
@@ -13,7 +13,7 @@ from lerobot.utils.control_utils import init_keyboard_listener
 import shutil
 import termios, sys
 from lerobot.utils.constants import HF_LEROBOT_HOME
-from teleop_joint_offsets import get_start_joints, compute_joint_offsets
+from scripts.utils.teleop_joint_offsets import get_start_joints, compute_joint_offsets
 from lerobot.datasets.lerobot_dataset import LeRobotDataset
 from lerobot.datasets.utils import hw_to_dataset_features
 from lerobot.utils.control_utils import sanity_check_dataset_robot_compatibility
@@ -35,6 +35,7 @@ class RecordConfig:
         self.repo_id: str = cfg["repo_id"]
         self.fps: str = cfg.get("fps", 15)
         self.dataset_path: str = HF_LEROBOT_HOME / self.repo_id
+        self.user_info: str = cfg.get("user_notes", None)
 
         # teleop config
         self.port = dxl_cfg["port"]
@@ -44,6 +45,7 @@ class RecordConfig:
         self.joint_signs = dxl_cfg["joint_signs"]
         self.gripper_config = dxl_cfg["gripper_config"]
         self.control_mode = teleop.get("control_mode", "isoteleop")
+        
         # robot config
         self.robot_ip: str = robot["ip"]
         self.gripper_port: str = robot["gripper_port"]
@@ -89,12 +91,12 @@ def check_joint_offsets(record_cfg: RecordConfig):
         )
     logging.info("Joint offsets verified successfully.")
     
-def main(record_cfg: RecordConfig):
+def run_record(record_cfg: RecordConfig):
     try:
-        # Check joint offsets
-        check_joint_offsets(record_cfg)
-        
         dataset_name, data_version = generate_dataset_name(record_cfg)
+
+        # Check joint offsets
+        check_joint_offsets(record_cfg)        
         
         # Create RealSenseCamera configurations
         wrist_image_cfg = RealSenseCameraConfig(serial_number_or_name=record_cfg.wrist_cam_serial,
@@ -242,9 +244,11 @@ def main(record_cfg: RecordConfig):
 
 
 
-if __name__ == "__main__":
-    with open(Path(__file__).parent / "config" / "cfg.yaml", 'r') as f:
+def main():
+    parent_path = Path(__file__).resolve().parent
+    cfg_path = parent_path.parent / "config" / "cfg.yaml"
+    with open(cfg_path, 'r') as f:
         cfg = yaml.safe_load(f)
 
     record_cfg = RecordConfig(cfg["record"])
-    main(record_cfg)
+    run_record(record_cfg)

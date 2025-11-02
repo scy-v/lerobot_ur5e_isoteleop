@@ -4,7 +4,6 @@ import logging
 import time
 from pathlib import Path
 from collections.abc import Iterator
-from pathlib import Path
 
 import numpy as np
 import rerun as rr
@@ -136,7 +135,9 @@ def visualize_dataset(
             print("Ctrl-C received. Exiting.")
 
 def main():
-    with open(Path(__file__).parent / "config" / "cfg.yaml", 'r') as f:
+    parent_path = Path(__file__).resolve().parent
+    cfg_path = parent_path.parent / "config" / "cfg.yaml"
+    with open(cfg_path, 'r') as f:
         cfg = yaml.safe_load(f)
 
     parser = argparse.ArgumentParser()
@@ -144,8 +145,7 @@ def main():
     parser.add_argument(
         "--repo-id",
         type=str,
-        default=cfg["visualize"]["repo_id"],
-        help="Name of hugging face repository containing a LeRobotDataset dataset (e.g. `lerobot/pusht`).",
+        default=cfg["visualize"]["dataset_name"],
     )
     parser.add_argument(
         "--episode-index",

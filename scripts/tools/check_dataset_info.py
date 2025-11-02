@@ -8,7 +8,8 @@ from datetime import datetime
 
 def clean_dataset_info():
     # ====== [LOAD CONFIG] ======
-    cfg_path = Path(__file__).parent / "config" / "cfg.yaml"
+    parent_path = Path(__file__).resolve().parent
+    cfg_path = parent_path.parent / "config" / "cfg.yaml"
     with open(cfg_path, "r") as f:
         cfg = yaml.safe_load(f)
 
@@ -40,10 +41,12 @@ def clean_dataset_info():
 
     kept_lines = []
     removed_lines = []
+
+    # filter lines: only keep folders that exist
     for line in lines:
         match = re.search(r'name="([^"]+)"', line)
         if match:
-            full_name = match.group(1)  # e.g. scylearning/pick_cube_20251101_v01
+            full_name = match.group(1)
             folder_name = full_name.split("/", 1)[1] if "/" in full_name else full_name
             if folder_name in existing_folders:
                 kept_lines.append(line)
@@ -52,13 +55,21 @@ def clean_dataset_info():
         else:
             kept_lines.append(line)
 
+    # ====== [UPDATE record_id] ======
+    # ====== [UPDATE record_id as string] ======
+    updated_lines = []
+    for idx, line in enumerate(kept_lines, start=1):
+        line = re.sub(r'record_id="[^"]*"', f'record_id="{idx}"', line)
+        updated_lines.append(line)
+
+
     # ====== [WRITE CLEAN FILE BACK] ======
     with open(info_file, "w") as f:
-        f.writelines(kept_lines)
+        f.writelines(updated_lines)
 
     # ====== [REPORT RESULTS] ======
     print("====== [CLEANUP COMPLETE] ======")
-    print(f"Kept {len(kept_lines)} lines, removed {len(removed_lines)} invalid entries.")
+    print(f"Kept {len(updated_lines)} lines, removed {len(removed_lines)} invalid entries.")
     print(f"Backup saved at: {backup_file}")
     if removed_lines:
         print("Removed entries:")
@@ -66,5 +77,6 @@ def clean_dataset_info():
             print(" -", rl.strip())
 
 
-if __name__ == "__main__":
+
+def main():
     clean_dataset_info()

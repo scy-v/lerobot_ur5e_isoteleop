@@ -15,5 +15,5 @@ def list_realsense_devices():
         name = dev.get_info(rs.camera_info.name)
         print(f"Device {i}: Name={name}, Serial={serial}")
 
-if __name__ == "__main__":
+def main():
     list_realsense_devices()

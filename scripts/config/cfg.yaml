@@ -1,7 +1,8 @@
 record:
-  repo_id: &repo_id "scylearning/pick_greencube_into_trashbin_umi" 
-  # Suggested format: <hf_username>/<description>, description = task.description -> Verb_SourceObject_prep_TargetObject_additionalInfo
+  repo_id: &repo_id "scylearning/grasp_pencil" 
+  # Suggested format: <hf_username>/<description>, description = task.description -> Verb_SourceObject_prep_TargetObject
   # e.g. Pick up the green cube and put it into the trash bin -> pick_greencube_into_trashbin
+  user_notes:  # any additional notes about the dataset
   fps: 15 # dataset and camera frame rate
 
   teleop:
@@ -10,7 +11,7 @@ record:
       port: "/dev/serial/by-id/usb-FTDI_FT232R_USB_UART_A50285BI-if00-port0"
       use_gripper: &use_gripper True # whether the slave robot can use gripper
       joint_ids: [1, 2, 3, 4, 5, 6]
-      joint_offsets: [0.0, 4.712, 4.712, 4.712, 4.712, 0.0] #[0.0, 4.712, 4.712, 4.712, 4.712, 3.142]
+      joint_offsets: [0.0, 4.712, 4.712, 4.712, 4.712, 12.566] #[0.0, 4.712, 4.712, 4.712, 4.712, 3.142]
       joint_signs: [1, 1, -1, 1, 1, 1]
       gripper_config: [7, 2.5157, 3.4790] # id, min, max
       
@@ -21,11 +22,11 @@ record:
     gripper_reverse: False  # If gripper moves opposite, flip this value
 
   task:
-    description: "Pick up the green cube and put it into the trash bin." # task description
+    description: "Grasp the pencil." # task description
     num_episodes: 10 # number of episodes to record
     display: True # Whether to display the data during recording
-    resume: false
-    resume_dataset: scylearning/pick_greencube_into_trashbin_umi_20251101_v02 # dataset to resume from if resume is True
+    resume: False
+    resume_dataset: scylearning/pick_greencube_into_trashbin_20251102_v01 # dataset to resume from if resume is True
 
   time:
     episode_time_sec: 6000 # max time per episode in seconds
@@ -40,12 +41,12 @@ record:
     push_to_hub: False # whether to push the dataset to your huggingface repo after recording
 
 replay:
-  repo_id: *repo_id
+  dataset_name: scylearning/pick_greencube_into_trashbin_dh_20251030_v01
   episode_idx: 0 # episode index to replay
   robot:
     ip: *ip
     gripper_port: *gripper_port
 
 visualize:
-  repo_id: *repo_id
+  dataset_name: scylearning/grasp_pencil_20251102_v03
   episode_index: 0 # episode index to visualize

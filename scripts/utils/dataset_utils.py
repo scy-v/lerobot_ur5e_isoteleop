@@ -53,22 +53,31 @@ def update_dataset_info(cfg, dataset_name, version_str):
     """
     Append a single-line record to a readme file under info_path.
     Line format:
-      <dataset_name>: task="<original task>", date="<YYYY-MM-DD HH:MM:SS>", version="<vXX>"
+      record_id="<N>", name="<dataset_name>", task="<original task>", date="<YYYY-MM-DD HH:MM:SS>", version="<vXX>"
     Simply append chronologically (no sorting).
     """
     task_description = cfg.task_description
     info_path = Path(cfg.dataset_path).parent
-    now_str = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-
-    if cfg.resume:
-        type_ = "resumed"
-    else:
-        type_ = "record"
-
-    info_line = f'name="{dataset_name}", task="{task_description}", date="{now_str}", version="{version_str}", type="{type_}"\n'
+    user_info = cfg.user_info
     info_file = info_path / "dataset_info.txt"
 
-    # Append directly (create file if not exists)
+    # ====== [COUNT EXISTING VALID LINES] ======
+    if info_file.exists():
+        with open(info_file, "r") as f:
+            # 只统计非空行
+            lines = [line for line in f.readlines() if line.strip()]
+        record_id = len(lines) + 1
+    else:
+        record_id = 1
+
+    now_str = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    type_ = "resumed" if cfg.resume else "record"
+
+    info_line = (
+        f'record_id="{record_id}", name="{dataset_name}", task="{task_description}", '
+        f'date="{now_str}", version="{version_str}", user_info="{user_info}", type="{type_}"\n'
+    )
+
+    # ====== [APPEND LINE] ======
     with open(info_file, "a") as f:
         f.write(info_line)
-

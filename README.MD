@@ -19,28 +19,27 @@ pip install -e lerobot
 mkdir ur_data_collection && cd ur_data_collection
 git clone https://github.com/scy-v/lerobot_ur5e_isoteleop.git
 cd lerobot_ur5e_isoteleop
-pip install -e lerobot_robot_ur5e
-pip install -e lerobot_teleoperator_ur5e
+pip install -e .
 ```
 
 ## 2. Obtain and Configure Necessary Parameters
 
 ### 2.1 Get RealSense Camera Serial Number
 ```bash
-python scripts/rs_devices.py
+tools-check-rs
 ```
 
 ### 2.2 Map Gripper Serial Port
 For example, map the gripper to `/dev/ur5e_left_gripper` and make sure only one gripper USB device is connected:
 ```bash
-bash scripts/map_gripper.sh <gripper_port_name>
+map_gripper.sh <gripper_port_name>
 ```
 Next, enter the mapped device into the `gripper_port` field in `cfg.yaml`.
 
 ### 2.3 Get the Master Arm's Persistent Serial Identifier
 Before running this, make sure only one USB device for the master arm is connected:
 ```bash
-bash scripts/check_master_port.sh
+check_master_port.sh
 ```
 Next, enter the obtained serial identifier into the `port` field in `cfg.yaml`.
 
@@ -50,7 +49,7 @@ Next, enter the obtained serial identifier into the `port` field in `cfg.yaml`.
 
 Manually move the master arm so that its joint angles roughly match the current joint angles of the slave arm. This is done to calculate the joint angle offset cycle between the master and slave arms. Then run:
 ```bash
-python scripts/teleop_joint_offsets.py
+utils-joint-offsets
 ```
 Copy the resulting `joint_offsets` into the corresponding fields in `cfg.yaml`.
 
@@ -72,26 +71,34 @@ huggingface-cli whoami  # Verify successful login
 2. Verify that the parameters in `cfg.yaml` are correct.  
 3. To ensure standardized data collection, please read `9. Dataset Naming and Recording Details` before running the following command:
 ```bash
-python scripts/run_record.py
+ur5e-record
 ```
-![record_image](assets/record.png)
+<figure>
+  <img src="assets/record.png" alt="Record" width="600">
+  <figcaption style="text-align: center; font-weight: bold; margin-top: 4px;">
+  Figure 1: Record</figcaption>
+</figure>
 
 ## 4. Dataset Replay
 ```bash
-python scripts/run_replay.py # Make sure cfg.yaml is properly configured
+ur5e-replay # Make sure cfg.yaml is properly configured
 ```
 
 ## 5. Dataset Visualization
 ```bash
-python scripts/run_visualize.py # Make sure cfg.yaml is properly configured
+ur5e-visualize # Make sure cfg.yaml is properly configured
 ```
-![record_image](assets/visualize.png)
+<figure>
+  <img src="assets/visualize.png" alt="Robot Gripper" width="600">
+  <figcaption style="text-align: center; font-weight: bold; margin-top: 4px;">
+  Figure 2: Visualization</figcaption>
+</figure>
 
 ## 6. Dataset Appending and Resume
 If you have already recorded a dataset under the specified `repo_id`, set `resume: True` in `cfg.yaml` and enter the dataset name in `resume_dataset` to continue recording new data on the existing dataset. Then, run the following command:
 
 ```bash
-python scripts/run_record.py
+ur5e-record
 ```
 
 ## 7. Merge Datasets
@@ -118,12 +125,31 @@ lerobot-edit-dataset
 
 ## 9. Dataset Naming and Recording Details
 ### 1. Dataset Naming
-1. Datasets are saved by default in `~/.cache/huggingface/lerobot`.
+<figure>
+  <img src="assets/dataset.png" alt="Robot Gripper" width="600">
+  <figcaption style="text-align: center; font-weight: bold; margin-top: 4px;">
+  Figure 3: Dataset</figcaption>
+</figure>
+
+<figure>
+  <img src="assets/dataset_info.png" alt="Robot Gripper" width="600">
+  <figcaption style="text-align: center; font-weight: bold; margin-top: 4px;">
+  Figure 4: Dataset Info</figcaption>
+</figure>
+
+1. The dataset is by default stored in the `~/.cache/huggingface/lerobot` directory and contains three types of items:
+
+   - `dataset_info.txt`: Automatically records local dataset information, including the following fields: `record_id`, `name`, `task`, `date`, `version`, `user_info`, and `type`. The `user_info` field can be annotated via the `user_notes` entry in `cfg.yaml`.
+
+   - `dataset_info_backup`: When `tools-check-dataset` is used to manually update `dataset_info.txt`, this folder stores backups of the previous records.
+
+   - Dataset folders: Stores the actual dataset contents.
+
 2. Dataset names follow the format `[description]_[date]_[version]`, where:
    - `description` comes from `cfg.yaml` as `repo_id=<user_name>/<description>`;
    - `date` is generated automatically;
    - `version` is incremented automatically if a dataset with the same `repo_id` already exists.
-3. Description naming rule: `task.description -> Verb_SourceObject_prep_TargetObject_additionalInfo`.  
+3. Description naming rule: `task.description -> Verb_SourceObject_prep_TargetObject`.  
    For example:  
    `Pick up the green cube and put it into the trash bin -> pick_greencube_into_trashbin`.
 
@@ -131,8 +157,8 @@ lerobot-edit-dataset
 1. Complete step `2. Get and configure required parameters`.
 2. Fill in the task instruction in `cfg.yaml` under `task.description` and set `repo_id` according to the dataset naming rules.
 3. Check and adjust other parameters in `cfg.yaml` to ensure correctness.
-4. Run `python scripts/run_record.py`. For safety, ensure the master and slave arm joint angles are approximately aligned; `run_record` will automatically perform the `2.4 Master-Slave Joint Angle Error Check`. Then follow `8. Recording Control Keys` to complete the recording.
+4. Run `ur5e-record`. For safety, ensure the master and slave arm joint angles are approximately aligned; `ur5e-record` will automatically perform the `2.4 Master-Slave Joint Angle Error Check`. Then follow `8. Recording Control Keys` to complete the recording.
 5. After recording, a `dataset_info.txt` file will be automatically created in the same directory to store local dataset information. If you have manually deleted any datasets, update the `dataset_info.txt` using:
 ```bash
-python scripts/check_dataset_info.py
+tools-check-dataset
 ```
