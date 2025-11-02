@@ -64,7 +64,6 @@ def update_dataset_info(cfg, dataset_name, version_str):
     # ====== [COUNT EXISTING VALID LINES] ======
     if info_file.exists():
         with open(info_file, "r") as f:
-            # 只统计非空行
             lines = [line for line in f.readlines() if line.strip()]
         record_id = len(lines) + 1
     else:
