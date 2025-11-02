@@ -58,6 +58,7 @@ ur5e-help
 ## 2. 获取和配置必要参数
 
 ### 2.1 获取 RealSense 相机序列号
+请确保每次仅连接一个相机:
 ```bash
 tools-check-rs
 ```

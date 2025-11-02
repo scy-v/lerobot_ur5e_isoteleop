@@ -57,6 +57,7 @@ ur5e-help
 ## 2. Obtain and Configure Necessary Parameters
 
 ### 2.1 Get RealSense Camera Serial Number
+Please make sure only one camera is connected at a time.
 ```bash
 tools-check-rs
 ```
