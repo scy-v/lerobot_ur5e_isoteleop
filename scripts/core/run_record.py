@@ -220,8 +220,8 @@ def run_record(record_cfg: RecordConfig):
                     if user_input == "":
                         break  
                     else:
-                        logging.info("Please press only Enter to continue.")
-                        
+                        logging.info("====== [WARNING] Please press only Enter to continue ======")
+
                 logging.info("====== [RESET] Resetting the environment ======")
                 record_loop(
                     robot=robot,
