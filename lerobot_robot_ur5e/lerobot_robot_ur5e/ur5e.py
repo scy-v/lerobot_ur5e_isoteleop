@@ -92,7 +92,7 @@ class UR5e(Robot):
     def _read_gripper_state(self):
         self._gripper.pos = None
         while True:
-            gripper_position = 0 if self._gripper_position <= 0.7 else 1
+            gripper_position = 0.0 if self._gripper_position <= 0.7 else 1.0
 
             if self.config.gripper_reverse:
                 gripper_position = 1 - gripper_position
@@ -124,7 +124,7 @@ class UR5e(Robot):
             "tcp_pose.p": float,
             "tcp_pose.y": float,
             "gripper_position": float,
-            "gripper_position_bin": int,
+            "gripper_position_bin": float,
         }
 
     @property
@@ -163,7 +163,7 @@ class UR5e(Robot):
     def get_observation(self) -> dict[str, Any]:
         if not self.is_connected:
             raise DeviceNotConnectedError(f"{self} is not connected.")
-
+        
         # Read joint positions
         joint_position = self._arm["rtde_r"].getActualQ()
 

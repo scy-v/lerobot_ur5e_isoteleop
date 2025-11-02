@@ -110,12 +110,13 @@ lerobot-edit-dataset
     --operation.type merge 
     --operation.repo_ids "['<repo_id_1>', '<repo_id2>']"
 ```
+- For more dataset processing commands, see [LeRobot](https://huggingface.co/docs/lerobot/using_dataset_tools).
 
 ## 8. Recording Control Keys
 
 1. **Right Arrow Key**  
    1. Press the right arrow key: end the current episode and save the data. The program will pause.  
-   2. Enter the **reset** phase: press any key to continue (the slave arm will follow the master arm), use the master arm to return the slave arm to its initial position.  
+   2. Enter the **reset** phase: press enter key to continue (the slave arm will follow the master arm), use the master arm to return the slave arm to its initial position.  
    3. Press the right arrow key again to start recording the next episode.
 
 2. **Left Arrow Key**  
@@ -124,6 +125,9 @@ lerobot-edit-dataset
 3. **Esc Key**  
    - Press to exit the recording session and save all recorded episodes.
 
+4. **Ctrl+C or Exception**
+   - Pressing or on exception: enters exception handling and asks whether to delete the incomplete dataset.
+  
 ## 9. Dataset Naming and Recording Details
 ### 1. Dataset Naming
 <p align="center">

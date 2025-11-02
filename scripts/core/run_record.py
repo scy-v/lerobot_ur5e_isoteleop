@@ -153,7 +153,7 @@ def run_record(record_cfg: RecordConfig):
         action_features = hw_to_dataset_features(robot.action_features, "action")
         obs_features = hw_to_dataset_features(robot.observation_features, "observation", use_video=True)
         dataset_features = {**action_features, **obs_features}
-
+        
         if record_cfg.resume:
             dataset = LeRobotDataset(
                 dataset_name,

@@ -1,8 +1,8 @@
 record:
-  repo_id: &repo_id "scylearning/pick_greencube_into_trashbin" 
+  repo_id: &repo_id "scylearning/testpick_greencube_into_trashbin" 
   # Suggested format: <hf_username>/<description>, description = task.description -> Verb_SourceObject_prep_TargetObject
   # e.g. Pick up the green cube and put it into the trash bin -> pick_greencube_into_trashbin
-  user_notes: umi_test # any additional notes about the dataset
+  user_notes: gripper_umi/cam_opposite_side # any additional notes about the dataset
   fps: 15 # dataset and camera frame rate
 
   teleop:
@@ -23,15 +23,15 @@ record:
 
   task:
     description: "Pick up the green cube and put it into the trash bin." # task description
-    num_episodes: 10 # number of episodes to record
+    num_episodes: 17 # number of episodes to record
     display: True # Whether to display the data during recording
     resume: False
-    resume_dataset: scylearning/pick_greencube_into_trashbin_20251102_v01 # dataset to resume from if resume is True
+    resume_dataset: scylearning/pick_greencube_into_trashbin_20251102_v02 # dataset to resume from if resume is True
 
   time:
     episode_time_sec: 6000 # max time per episode in seconds
     reset_time_sec: 6000 # max time to reset between episodes in seconds
-    save_meta_period: 10 # Save metadata after every N episodes
+    save_meta_period: 1 # Save metadata after every N episodes
 
   cameras:
     wrist_cam_serial: "332322070928" # wrist camera serial number
@@ -48,5 +48,5 @@ replay:
     gripper_port: *gripper_port
 
 visualize:
-  dataset_name: scylearning/pick_greencube_into_trashbin_20251102_v01
+  dataset_name: scylearning/testpick_greencube_into_trashbin_20251103_v01
   episode_index: 0 # episode index to visualize
