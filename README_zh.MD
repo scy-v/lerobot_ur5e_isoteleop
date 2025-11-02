@@ -24,6 +24,37 @@ cd lerobot_ur5e_isoteleop
 pip install -e .
 ```
 
+### 1.4 查看可运行的命令
+运行以下命令以查看所有可用的脚本：
+```bash
+ur5e-help
+# ==================================================
+#  UR5e Teleoperation Utilities - Command Reference
+# ==================================================
+
+# Core Commands:
+#   ur5e-record           Record teleoperation dataset
+#   ur5e-replay           Replay a recorded dataset
+#   ur5e-visualize        Visualize recorded dataset
+
+# Utility Commands:
+#   utils-joint-offsets   Compute joint offsets for teleoperation
+
+# Tool Commands:
+#   tools-check-dataset   Check local dataset information
+#   tools-check-rs        Retrieve connected RealSense camera serial numbers
+
+# Shell Tools:
+#   map_gripper.sh        Map Gripper Serial Port
+#   check_master_port.sh  Get the Master Arm's Persistent Serial Identifier
+
+# Test Commands:
+#   test-gripper-ctrl     Run gripper control command (operate the gripper)
+
+# --------------------------------------------------
+#  Tip: Use 'ur5e-help' anytime to see this summary.
+# ==================================================
+```
 ## 2. 获取和配置必要参数
 
 ### 2.1 获取 RealSense 相机序列号

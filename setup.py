@@ -34,6 +34,8 @@ setup(
 
             # test commands (testing scripts)
             "test-gripper-ctrl = scripts.test.gripper_ctrl:main",
+            # unified help command
+            "ur5e-help = scripts.help.help_info:main",
         ]
     },
 )
