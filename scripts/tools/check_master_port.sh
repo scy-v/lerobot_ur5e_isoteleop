@@ -1,8 +1,6 @@
 #!/bin/bash
 # ==========================================================
 # Script: check_serial_port.sh
-# Description: Check how many serial devices exist under /dev/serial/by-id/
-# Author: ChatGPT
 # ==========================================================
 
 # obtain list of serial devices
