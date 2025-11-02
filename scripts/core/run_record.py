@@ -215,11 +215,13 @@ def run_record(record_cfg: RecordConfig):
             # Reset the environment if not stopping or re-recording
             if not events["stop_recording"] and (episode_idx < record_cfg.num_episodes - 1 or events["rerecord_episode"]):
                 while True:
+                    termios.tcflush(sys.stdin, termios.TCIFLUSH)
                     user_input = input("====== [WAIT] Press Enter to reset the environment ======")
                     if user_input == "":
                         break  
                     else:
                         logging.info("Please press only Enter to continue.")
+                        
                 logging.info("====== [RESET] Resetting the environment ======")
                 record_loop(
                     robot=robot,
