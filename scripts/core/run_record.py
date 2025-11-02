@@ -90,7 +90,19 @@ def check_joint_offsets(record_cfg: RecordConfig):
             "Please check teleop_joint_offsets.py output."
         )
     logging.info("Joint offsets verified successfully.")
-    
+
+def handle_incomplete_dataset(dataset_path):
+    if dataset_path.exists():
+        print(f"====== [WARNING] Detected an incomplete dataset folder: {dataset_path} ======")
+        termios.tcflush(sys.stdin, termios.TCIFLUSH)
+        ans = input("Do you want to delete it? (y/n): ").strip().lower()
+        if ans == "y":
+            print(f"====== [DELETE] Removing folder: {dataset_path} ======")
+            shutil.rmtree(dataset_path, ignore_errors=True)  # Delete only this specific dataset folder
+            print("====== [DONE] Incomplete dataset folder deleted successfully. ======")
+        else:
+            print("====== [KEEP] Incomplete dataset folder retained, please check manually. ======")
+
 def run_record(record_cfg: RecordConfig):
     try:
         dataset_name, data_version = generate_dataset_name(record_cfg)
@@ -202,7 +214,12 @@ def run_record(record_cfg: RecordConfig):
 
             # Reset the environment if not stopping or re-recording
             if not events["stop_recording"] and (episode_idx < record_cfg.num_episodes - 1 or events["rerecord_episode"]):
-                input("====== [WAIT] Press any key to reset the environment======")
+                while True:
+                    user_input = input("====== [WAIT] Press Enter to reset the environment ======")
+                    if user_input == "":
+                        break  
+                    else:
+                        logging.info("Please press only Enter to continue.")
                 logging.info("====== [RESET] Resetting the environment ======")
                 record_loop(
                     robot=robot,
@@ -230,18 +247,16 @@ def run_record(record_cfg: RecordConfig):
             dataset.push_to_hub()
 
     except Exception as e:
+        logging.info(f"====== [ERROR] {e} ======")
         dataset_path = Path(HF_LEROBOT_HOME) / dataset_name
-        if dataset_path.exists():
-            print(f"====== [WARNING] Detected an incomplete dataset folder: {dataset_path} ======")
-            termios.tcflush(sys.stdin, termios.TCIFLUSH)
-            ans = input("Do you want to delete it? (y/n): ").strip().lower()
-            if ans == "y":
-                print(f"====== [DELETE] Removing folder: {dataset_path} ======")
-                shutil.rmtree(dataset_path, ignore_errors=True)  # Delete only this specific dataset folder
-                print("====== [DONE] Incomplete dataset folder deleted successfully. ======")
-            else:
-                print("====== [KEEP] Incomplete dataset folder retained, please check manually. ======")
+        handle_incomplete_dataset(dataset_path)
+        sys.exit(1)
 
+    except KeyboardInterrupt:
+        logging.info("\n====== [INFO] Ctrl+C detected, cleaning up incomplete dataset... ======")
+        dataset_path = Path(HF_LEROBOT_HOME) / dataset_name
+        handle_incomplete_dataset(dataset_path)
+        sys.exit(1)
 
 
 def main():

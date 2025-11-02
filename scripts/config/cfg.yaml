@@ -1,8 +1,8 @@
 record:
-  repo_id: &repo_id "scylearning/grasp_pencil" 
+  repo_id: &repo_id "scylearning/pick_greencube_into_trashbin" 
   # Suggested format: <hf_username>/<description>, description = task.description -> Verb_SourceObject_prep_TargetObject
   # e.g. Pick up the green cube and put it into the trash bin -> pick_greencube_into_trashbin
-  user_notes:  # any additional notes about the dataset
+  user_notes: umi_test # any additional notes about the dataset
   fps: 15 # dataset and camera frame rate
 
   teleop:
@@ -22,7 +22,7 @@ record:
     gripper_reverse: False  # If gripper moves opposite, flip this value
 
   task:
-    description: "Grasp the pencil." # task description
+    description: "Pick up the green cube and put it into the trash bin." # task description
     num_episodes: 10 # number of episodes to record
     display: True # Whether to display the data during recording
     resume: False
@@ -41,12 +41,12 @@ record:
     push_to_hub: False # whether to push the dataset to your huggingface repo after recording
 
 replay:
-  dataset_name: scylearning/pick_greencube_into_trashbin_dh_20251030_v01
+  dataset_name: scylearning/pick_greencube_into_trashbin_20251102_v01
   episode_idx: 0 # episode index to replay
   robot:
     ip: *ip
     gripper_port: *gripper_port
 
 visualize:
-  dataset_name: scylearning/grasp_pencil_20251102_v03
+  dataset_name: scylearning/pick_greencube_into_trashbin_20251102_v01
   episode_index: 0 # episode index to visualize
