@@ -120,9 +120,9 @@ class UR5e(Robot):
             "tcp_pose.x": float,
             "tcp_pose.y": float,
             "tcp_pose.z": float,
-            "tcp_pose.r": float,
-            "tcp_pose.p": float,
-            "tcp_pose.y": float,
+            "tcp_pose.rx": float,
+            "tcp_pose.ry": float,
+            "tcp_pose.rz": float,
             "gripper_position": float,
             "gripper_position_bin": float,
         }
@@ -175,7 +175,7 @@ class UR5e(Robot):
         for i in range(len(joint_position)):
             obs_dict[f"joint_{i+1}.pos"] = joint_position[i]
 
-        for i, axis in enumerate(["x", "y", "z","r","p","y"]):
+        for i, axis in enumerate(["x", "y", "z","rx","ry","rz"]):
             obs_dict[f"tcp_pose.{axis}"] = tcp_pose[i]
 
         if self.config.use_gripper:
