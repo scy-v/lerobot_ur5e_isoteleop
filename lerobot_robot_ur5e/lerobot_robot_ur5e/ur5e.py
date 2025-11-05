@@ -116,12 +116,6 @@ class UR5e(Robot):
     @property
     def _motors_ft(self) -> dict[str, type]:
         return {
-            "joint_1.pos": float,
-            "joint_2.pos": float,
-            "joint_3.pos": float,
-            "joint_4.pos": float,
-            "joint_5.pos": float,
-            "joint_6.pos": float,
             "tcp_pose.x": float,
             "tcp_pose.y": float,
             "tcp_pose.z": float,
@@ -130,6 +124,12 @@ class UR5e(Robot):
             "tcp_pose.rz": float,
             "gripper_position": float,
             "gripper_position_bin": float,
+            "joint_1.pos": float,
+            "joint_2.pos": float,
+            "joint_3.pos": float,
+            "joint_4.pos": float,
+            "joint_5.pos": float,
+            "joint_6.pos": float,
         }
 
     @property
