@@ -30,6 +30,11 @@ class UR5e(Robot):
         self._num_joints = 6
         self._gripper_force = 20
         self._gripper_position = 1
+        self._velocity = 0.5 # not used in current version
+        self._acceleration = 0.5 # not used in current version
+        self._dt = 0.002
+        self._lookahead_time = 0.2
+        self._gain = 100
         self._last_gripper_position = 1
         
     def connect(self) -> None:
@@ -144,14 +149,10 @@ class UR5e(Robot):
             raise DeviceNotConnectedError(f"{self} is not connected.")
 
         joint_positions = [action[f"joint_{i+1}.pos"] for i in range(self._num_joints)]
-        velocity = 0.5 # not used in current version
-        acceleration = 0.5 # not used in current version
-        dt = 0.002
-        lookahead_time = 0.2
-        gain = 100
+
         t_start = self._arm["rtde_c"].initPeriod()
 
-        self._arm["rtde_c"].servoJ(joint_positions, velocity, acceleration, dt, lookahead_time, gain)
+        self._arm["rtde_c"].servoJ(joint_positions, self._velocity, self._acceleration, self._dt, self._lookahead_time, self._gain)
 
         if "gripper_position" in action:
             self._gripper_position = action["gripper_position"]
