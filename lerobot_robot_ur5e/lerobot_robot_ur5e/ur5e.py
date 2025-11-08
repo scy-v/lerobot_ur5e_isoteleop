@@ -124,8 +124,8 @@ class UR5e(Robot):
             "joint_6.pos": float,
             # gripper state
             "gripper_raw_position": float, # raw position in [0,1]
-            "gripper_action_bin": float, # action command bin (0 or 1)
             "gripper_raw_bin": float, # raw position bin (0 or 1)
+            "gripper_action_bin": float, # action command bin (0 or 1)
             # joint velocities
             "joint_1.vel": float,
             "joint_2.vel": float,
