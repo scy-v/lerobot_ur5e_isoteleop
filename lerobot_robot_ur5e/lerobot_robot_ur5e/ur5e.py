@@ -97,7 +97,7 @@ class UR5e(Robot):
     def _read_gripper_state(self):
         self._gripper.pos = None
         while True:
-            gripper_position = self._gripper_position
+            gripper_position = 0.0 if self._gripper_position  < self.config.close_threshold else 1.0
             if self.config.gripper_reverse:
                 gripper_position = 1 - gripper_position
 
@@ -123,8 +123,9 @@ class UR5e(Robot):
             "joint_5.pos": float,
             "joint_6.pos": float,
             # gripper state
-            "gripper_position_bin": float,
-            "gripper_position": float,
+            "gripper_raw_position": float, # raw position in [0,1]
+            "gripper_action_bin": float, # action command bin (0 or 1)
+            "gripper_raw_bin": float, # raw position bin (0 or 1)
             # joint velocities
             "joint_1.vel": float,
             "joint_2.vel": float,
@@ -247,12 +248,13 @@ class UR5e(Robot):
             obs_dict[f"tcp_force.{axis}"] = tcp_force[i]
 
         if self.config.use_gripper:
-            obs_dict["gripper_position"] = self._gripper.pos
-            obs_dict["gripper_position_bin"] = self._last_gripper_position
-            # obs_dict["gripper_position_bin"] = 0 if self._gripper.pos <= self.config.gripper_bin_threshold else 1
+            obs_dict["gripper_raw_position"] = self._gripper.pos
+            obs_dict["gripper_action_bin"] = self._last_gripper_position
+            obs_dict["gripper_raw_bin"] = 0 if self._gripper.pos <= self.config.gripper_bin_threshold else 1
         else:
-            obs_dict["gripper_position"] = None
-            obs_dict["gripper_position_bin"] = None
+            obs_dict["gripper_raw_position"] = None
+            obs_dict["gripper_action_bin"] = None
+            obs_dict["gripper_raw_bin"] = None
 
         # Capture images from cameras
         for cam_key, cam in self.cameras.items():

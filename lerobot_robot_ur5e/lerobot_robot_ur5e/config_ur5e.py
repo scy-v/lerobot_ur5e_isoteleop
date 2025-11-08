@@ -12,4 +12,5 @@ class UR5eConfig(RobotConfig):
     robot_ip: str = "192.168.1.184"
     gripper_port: str = "/dev/ur5e_left_gripper"
     gripper_bin_threshold: float = 0.98
+    close_threshold: float = 0.7
     cameras: dict[str, CameraConfig] = field(default_factory=dict)

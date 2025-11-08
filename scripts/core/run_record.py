@@ -44,13 +44,13 @@ class RecordConfig:
         self.joint_offsets = dxl_cfg["joint_offsets"]
         self.joint_signs = dxl_cfg["joint_signs"]
         self.gripper_config = dxl_cfg["gripper_config"]
-        self.close_threshold = dxl_cfg["close_threshold"]
         self.control_mode = teleop.get("control_mode", "isoteleop")
         
         # robot config
         self.robot_ip: str = robot["ip"]
         self.gripper_port: str = robot["gripper_port"]
         self.use_gripper: str = robot["use_gripper"]
+        self.close_threshold = robot["close_threshold"]
         self.gripper_reverse: str = robot["gripper_reverse"]
         self.gripper_bin_threshold: float = robot["gripper_bin_threshold"]
 
@@ -137,7 +137,6 @@ def run_record(record_cfg: RecordConfig):
             joint_ids=record_cfg.joint_ids,
             joint_offsets=record_cfg.joint_offsets,
             joint_signs=record_cfg.joint_signs,
-            close_threshold = record_cfg.close_threshold,
             gripper_config=record_cfg.gripper_config,
             control_mode=record_cfg.control_mode)
         
@@ -145,6 +144,7 @@ def run_record(record_cfg: RecordConfig):
             robot_ip=record_cfg.robot_ip,
             gripper_port=record_cfg.gripper_port,
             cameras = camera_config,
+            close_threshold = record_cfg.close_threshold,
             use_gripper = record_cfg.use_gripper,
             gripper_reverse = record_cfg.gripper_reverse,
             gripper_bin_threshold = record_cfg.gripper_bin_threshold
