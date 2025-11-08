@@ -97,8 +97,7 @@ class UR5e(Robot):
     def _read_gripper_state(self):
         self._gripper.pos = None
         while True:
-            gripper_position = 0.0 if self._gripper_position <= 0.7 else 1.0
-
+            gripper_position = self._gripper_position
             if self.config.gripper_reverse:
                 gripper_position = 1 - gripper_position
 
@@ -116,20 +115,62 @@ class UR5e(Robot):
     @property
     def _motors_ft(self) -> dict[str, type]:
         return {
-            "tcp_pose.x": float,
-            "tcp_pose.y": float,
-            "tcp_pose.z": float,
-            "tcp_pose.rx": float,
-            "tcp_pose.ry": float,
-            "tcp_pose.rz": float,
-            "gripper_position": float,
-            "gripper_position_bin": float,
+            # joint positions
             "joint_1.pos": float,
             "joint_2.pos": float,
             "joint_3.pos": float,
             "joint_4.pos": float,
             "joint_5.pos": float,
             "joint_6.pos": float,
+            # gripper state
+            "gripper_position_bin": float,
+            "gripper_position": float,
+            # joint velocities
+            "joint_1.vel": float,
+            "joint_2.vel": float,
+            "joint_3.vel": float,
+            "joint_4.vel": float,
+            "joint_5.vel": float,
+            "joint_6.vel": float,
+            # joint accelerations
+            "joint_1.acc": float,
+            "joint_2.acc": float,
+            "joint_3.acc": float,       
+            "joint_4.acc": float,
+            "joint_5.acc": float,
+            "joint_6.acc": float,
+            # joint forces
+            "joint_1.force": float,
+            "joint_2.force": float,
+            "joint_3.force": float,
+            "joint_4.force": float,
+            "joint_5.force": float,
+            "joint_6.force": float,
+            # tcp pose
+            "tcp_pose.x": float,
+            "tcp_pose.y": float,
+            "tcp_pose.z": float,
+            "tcp_pose.rx": float,
+            "tcp_pose.ry": float,
+            "tcp_pose.rz": float,
+            # tcp speed
+            "tcp_speed.x": float,
+            "tcp_speed.y": float,
+            "tcp_speed.z": float,
+            "tcp_speed.rx": float,
+            "tcp_speed.ry": float,
+            "tcp_speed.rz": float,
+            # tcp acceleration
+            "tcp_acc.x": float,
+            "tcp_acc.y": float,
+            "tcp_acc.z": float,
+            # tcp force
+            "tcp_force.x": float,
+            "tcp_force.y": float,
+            "tcp_force.z": float,
+            "tcp_force.rx": float,
+            "tcp_force.ry": float,
+            "tcp_force.rz": float,
         }
 
     @property
@@ -168,20 +209,47 @@ class UR5e(Robot):
         # Read joint positions
         joint_position = self._arm["rtde_r"].getActualQ()
 
+        # Read joint velocities
+        joint_velocity = self._arm["rtde_r"].getActualQd()
+
+        # Read joint accelerations
+        joint_acceleration = self._arm["rtde_r"].getTargetQdd()
+
+        # Read joint forces
+        joint_force = self._arm["rtde_c"].getJointTorques()
+
         # Read tcp pose
         tcp_pose = self._arm["rtde_r"].getActualTCPPose()
-        
+
+        # Read tcp speed
+        tcp_speed = self._arm["rtde_r"].getActualTCPSpeed()
+
+        # Read tcp acceleration
+        tcp_acceleration = self._arm["rtde_r"].getActualToolAccelerometer()
+
+        # Read tcp force
+        tcp_force = self._arm["rtde_r"].getActualTCPForce()
+
+        # Prepare observation dictionary
         obs_dict = {}
 
         for i in range(len(joint_position)):
             obs_dict[f"joint_{i+1}.pos"] = joint_position[i]
+            obs_dict[f"joint_{i+1}.vel"] = joint_velocity[i]
+            obs_dict[f"joint_{i+1}.acc"] = joint_acceleration[i]
+            obs_dict[f"joint_{i+1}.force"] = joint_force[i]
 
         for i, axis in enumerate(["x", "y", "z","rx","ry","rz"]):
             obs_dict[f"tcp_pose.{axis}"] = tcp_pose[i]
+            obs_dict[f"tcp_speed.{axis}"] = tcp_speed[i]
+            if i < 3: # tcp_acceleration have only 3 axes
+                obs_dict[f"tcp_acc.{axis}"] = tcp_acceleration[i]
+            obs_dict[f"tcp_force.{axis}"] = tcp_force[i]
 
         if self.config.use_gripper:
-            obs_dict["gripper_position"] = self._gripper.pos 
-            obs_dict["gripper_position_bin"] = 0 if self._gripper.pos <= 0.98 else 1
+            obs_dict["gripper_position"] = self._gripper.pos
+            obs_dict["gripper_position_bin"] = self._last_gripper_position
+            # obs_dict["gripper_position_bin"] = 0 if self._gripper.pos <= self.config.gripper_bin_threshold else 1
         else:
             obs_dict["gripper_position"] = None
             obs_dict["gripper_position_bin"] = None

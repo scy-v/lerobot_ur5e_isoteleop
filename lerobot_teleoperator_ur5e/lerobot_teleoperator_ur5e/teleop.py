@@ -65,6 +65,7 @@ class UR5eTeleop(Teleoperator):
                 joint_offsets=self.cfg.joint_offsets,
                 joint_signs=self.cfg.joint_signs,
                 port=self.cfg.port,
+                close_threshold=self.cfg.close_threshold,
                 use_gripper=self.cfg.use_gripper,
                 gripper_config=self.cfg.gripper_config,
                 real=True
@@ -109,6 +110,7 @@ if __name__ == "__main__":
             self.joint_offsets = dxl_cfg["joint_offsets"]
             self.joint_signs = dxl_cfg["joint_signs"]
             self.gripper_config = dxl_cfg["gripper_config"]
+            self.close_threshold = dxl_cfg["close_threshold"]
             self.control_mode = teleop.get("control_mode", "isoteleop")
 
     with open(Path(__file__).parent / "config" / "cfg.yaml", "r") as f:

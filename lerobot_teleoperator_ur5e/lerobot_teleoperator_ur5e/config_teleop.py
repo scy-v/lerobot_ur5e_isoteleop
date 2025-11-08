@@ -11,5 +11,6 @@ class UR5eTeleopConfig(TeleoperatorConfig):
     joint_ids: list[int]
     joint_offsets: list[float]
     joint_signs: list[int]
+    close_threshold: float
     gripper_config: tuple[int, float, float]
     control_mode: str = "isoteleop"

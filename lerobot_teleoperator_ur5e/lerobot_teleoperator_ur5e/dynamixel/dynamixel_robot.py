@@ -13,6 +13,7 @@ class DynamixelRobot(Robot):
         joint_ids: Sequence[int],
         joint_offsets: Sequence[float],
         joint_signs: Sequence[int],
+        close_threshold: float = 0.7,
         real: bool = False,
         baudrate: int = 57600,
         use_gripper: bool = True,
@@ -52,6 +53,7 @@ class DynamixelRobot(Robot):
         
         self._use_gripper = use_gripper
         self._joint_ids = joint_ids
+        self._close_threshold = close_threshold
         self._joint_offsets = np.array(joint_offsets)
         self._joint_signs = np.array(joint_signs)
         self._driver: DynamixelDriverProtocol
@@ -64,7 +66,7 @@ class DynamixelRobot(Robot):
 
         self._torque_on = False
         self._last_pos = None
-        self._alpha = 0.99
+        self._alpha = 1.0
         self.record_time = 0
         
     def num_dofs(self) -> int:
@@ -81,8 +83,8 @@ class DynamixelRobot(Robot):
                 self.gripper_open_close[1] - self.gripper_open_close[0]
             )
 
-            g_pos = min(max(0, g_pos), 1
-                        )
+            g_pos = min(max(0, g_pos), 1)
+            g_pos = 0.0 if g_pos < self._close_threshold else 1.0
             pos[-1] = g_pos
             
         if self._last_pos is None:

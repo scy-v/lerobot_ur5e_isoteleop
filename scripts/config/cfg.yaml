@@ -1,8 +1,9 @@
 record:
-  repo_id: &repo_id "scylearning/testpick_greencube_into_trashbin" 
+  repo_id: &repo_id "scylearning/pick_greencube_into_trashbin" 
+  # repo_id: &repo_id "scylearning/pick_greencube_into_trashbin" 
   # Suggested format: <hf_username>/<description>, description = task.description -> Verb_SourceObject_prep_TargetObject
   # e.g. Pick up the green cube and put it into the trash bin -> pick_greencube_into_trashbin
-  user_notes: gripper_umi/cam_opposite_side # any additional notes about the dataset
+  user_notes:  # any additional notes about the dataset
   fps: 15 # dataset and camera frame rate
 
   teleop:
@@ -10,23 +11,25 @@ record:
     dynamixel_config:
       port: "/dev/serial/by-id/usb-FTDI_FT232R_USB_UART_A50285BI-if00-port0"
       use_gripper: &use_gripper True # whether the slave robot can use gripper
+      close_threshold: 0.7 # threshold to determine gripper open/close
       joint_ids: [1, 2, 3, 4, 5, 6]
-      joint_offsets: [0.0, 4.712, 4.712, 4.712, 4.712, 6.283] #[0.0, 4.712, 4.712, 4.712, 4.712, 3.142]
+      joint_offsets: [0.0, 4.712, 4.712, 10.996, 4.712, 0.0] 
       joint_signs: [1, 1, -1, 1, 1, 1]
       gripper_config: [7, 2.5157, 3.4790] # id, min, max
       
   robot:
     ip: &ip "192.168.131.11" # robot_ip
-    use_gripper: *use_gripper 
+    use_gripper: *use_gripper
+    gripper_bin_threshold: 0.98 # threshold to determine gripper is closed
     gripper_port: &gripper_port "/dev/ur5e_left_gripper" # gripper_port
     gripper_reverse: False  # If gripper moves opposite, flip this value
 
   task:
     description: "Pick up the green cube and put it into the trash bin." # task description
-    num_episodes: 17 # number of episodes to record
+    num_episodes: 100 # number of episodes to record
     display: True # Whether to display the data during recording
     resume: False
-    resume_dataset: scylearning/pick_greencube_into_trashbin_20251102_v02 # dataset to resume from if resume is True
+    resume_dataset: scylearning/pick_greencube_into_trashbin_20251105_v05 # dataset to resume from if resume is True
 
   time:
     episode_time_sec: 6000 # max time per episode in seconds
@@ -48,5 +51,5 @@ replay:
     gripper_port: *gripper_port
 
 visualize:
-  dataset_name: scylearning/testpick_greencube_into_trashbin_20251103_v01
+  dataset_name: scylearning/test_20251108_v01
   episode_index: 0 # episode index to visualize
