@@ -33,6 +33,7 @@ class RecordConfig:
 
         # global config
         self.repo_id: str = cfg["repo_id"]
+        self.debug: bool = cfg.get("debug", True)
         self.fps: str = cfg.get("fps", 15)
         self.dataset_path: str = HF_LEROBOT_HOME / self.repo_id
         self.user_info: str = cfg.get("user_notes", None)
@@ -110,7 +111,8 @@ def run_record(record_cfg: RecordConfig):
         dataset_name, data_version = generate_dataset_name(record_cfg)
 
         # Check joint offsets
-        check_joint_offsets(record_cfg)        
+        if not record_cfg.debug:
+            check_joint_offsets(record_cfg)        
         
         # Create RealSenseCamera configurations
         wrist_image_cfg = RealSenseCameraConfig(serial_number_or_name=record_cfg.wrist_cam_serial,
@@ -144,6 +146,7 @@ def run_record(record_cfg: RecordConfig):
             robot_ip=record_cfg.robot_ip,
             gripper_port=record_cfg.gripper_port,
             cameras = camera_config,
+            debug = record_cfg.debug,
             close_threshold = record_cfg.close_threshold,
             use_gripper = record_cfg.use_gripper,
             gripper_reverse = record_cfg.gripper_reverse,

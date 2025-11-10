@@ -192,15 +192,14 @@ class UR5e(Robot):
 
         joint_positions = [action[f"joint_{i+1}.pos"] for i in range(self._num_joints)]
 
-        t_start = self._arm["rtde_c"].initPeriod()
-
-        self._arm["rtde_c"].servoJ(joint_positions, self._velocity, self._acceleration, self._dt, self._lookahead_time, self._gain)
+        if not self.config.debug:
+            t_start = self._arm["rtde_c"].initPeriod()
+            self._arm["rtde_c"].servoJ(joint_positions, self._velocity, self._acceleration, self._dt, self._lookahead_time, self._gain)
+            self._arm["rtde_c"].waitPeriod(t_start)
 
         if "gripper_position" in action:
             self._gripper_position = action["gripper_position"]
-
-        self._arm["rtde_c"].waitPeriod(t_start)
-
+            
         return action
 
     def get_observation(self) -> dict[str, Any]:
