@@ -44,6 +44,7 @@ def compute_joint_offsets(cfg, start_joints: List[float]):
 
     # Compute best offsets
     curr_joints = driver.get_joints()
+    logger.info("Dynamixel current joint positions: %s", curr_joints)
 
     # Close driver
     driver.close()

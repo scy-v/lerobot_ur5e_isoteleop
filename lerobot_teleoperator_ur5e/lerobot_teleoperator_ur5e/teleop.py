@@ -126,6 +126,8 @@ if __name__ == "__main__":
     )
     teleop = UR5eTeleop(teleop_config)
     teleop.connect()
+    for i in range(2):
+        teleop.get_action()
     # teleop.dynamixel_robot._driver.set_operating_mode(3)
     # teleop.dynamixel_robot.set_torque_mode(True)
     # teleop.dynamixel_robot.command_joint_state(np.array([3.141129970550537, -2.003148218194479, 1.5803211371051233, -1.1479324859431763, -1.5713160673724573, -0.00014955202211552887, 3]))
