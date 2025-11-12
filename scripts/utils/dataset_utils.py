@@ -25,6 +25,9 @@ def generate_dataset_name(cfg):
         root_path = Path(dataset)
         base_path = root_path.parent  # location where all dataset folders are stored
 
+        # ensure the parent directory exists
+        base_path.mkdir(parents=True, exist_ok=True)
+
         # list folders that start with the description
         existing = [p.name for p in base_path.iterdir() if p.is_dir() and p.name.startswith(description + "_")]
 

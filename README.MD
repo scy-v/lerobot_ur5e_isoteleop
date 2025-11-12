@@ -74,7 +74,10 @@ Before running this, make sure only one USB device for the master arm is connect
 ```bash
 check_master_port.sh
 ```
-Next, enter the obtained serial identifier into the `port` field in `cfg.yaml`.
+Next, enter the obtained serial identifier into the `port` field in `cfg.yaml` and set device access permissions:
+```bash
+sudo chmod 666 <your_master_port>
+```
 
 ### 2.4 Obtain Master-Slave Joint Angle Offset Circle
 > **⚠️ WARNING: Before recording data, you must complete this step to set the correct joint offset. Otherwise, the slave arm may move unexpectedly.**

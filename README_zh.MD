@@ -74,7 +74,10 @@ map_gripper.sh <gripper_port_name>
 ```bash
 check_master_port.sh
 ```
-随后，将获取的串口标识符填入`cfg.yaml`中的`port`字段
+随后，将获取的串口标识符填入`cfg.yaml`中的`port`字段，并修改设备访问权限:
+```bash
+sudo chmod 666 <your_master_port>
+```
 ### 2.4 获取主臂-从臂关节角的误差周期
 > **⚠️ 注意：在记录数据前，务必完成此步骤以设置正确的误差周期。否则，从臂可能发生意外的动作。**
 

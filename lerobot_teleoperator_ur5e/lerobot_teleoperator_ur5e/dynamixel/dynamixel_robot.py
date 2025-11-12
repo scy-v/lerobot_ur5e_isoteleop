@@ -85,7 +85,6 @@ class DynamixelRobot(Robot):
             # g_pos = 0.0 if g_pos < self._close_threshold else 1.0
             pos[-1] = g_pos
             
-        print("Joint positions:", pos)
         return pos
 
     def command_joint_state(self, joint_state: np.ndarray) -> None:
