@@ -208,7 +208,7 @@ class UR5e(Robot):
         
         # Read joint positions
         joint_position = self._arm["rtde_r"].getActualQ()
-
+        
         # Read joint velocities
         joint_velocity = self._arm["rtde_r"].getActualQd()
 

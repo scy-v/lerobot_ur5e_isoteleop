@@ -60,7 +60,8 @@ class UR5eTeleop(Teleoperator):
 
     def _check_dynamixel_connection(self) -> None:
         logger.info("\n===== [TELEOP] Connecting to dynamixel Robot =====")
-        self.dynamixel_robot = DynamixelRobot(            
+        self.dynamixel_robot = DynamixelRobot(
+                hardware_offsets=self.cfg.hardware_offsets,
                 joint_ids=self.cfg.joint_ids,
                 joint_offsets=self.cfg.joint_offsets,
                 joint_signs=self.cfg.joint_signs,
@@ -106,6 +107,7 @@ if __name__ == "__main__":
             self.port = dxl_cfg["port"]
             self.use_gripper = dxl_cfg["use_gripper"]  
             self.joint_ids = dxl_cfg["joint_ids"]
+            self.hardware_offsets = dxl_cfg["hardware_offsets"]
             self.joint_offsets = dxl_cfg["joint_offsets"]
             self.joint_signs = dxl_cfg["joint_signs"]
             self.gripper_config = dxl_cfg["gripper_config"]
@@ -118,6 +120,7 @@ if __name__ == "__main__":
     teleop_config = UR5eTeleopConfig(
         port=record_cfg.port,
         use_gripper=record_cfg.use_gripper,
+        hardware_offsets=record_cfg.hardware_offsets,
         joint_ids=record_cfg.joint_ids,
         joint_offsets=record_cfg.joint_offsets,
         joint_signs=record_cfg.joint_signs,

@@ -513,8 +513,14 @@ class DynamixelDriver(DynamixelDriverProtocol):
         _j = self._joint_angles.copy()
         return _j / 2048.0 * np.pi
 
-    def get_positions(self) -> np.ndarray:
-        return self.get_joints()
+    def get_joints_deg(self):
+        return np.degrees(self.get_joints())    
+    
+    def get_positions(self, hardware_offsets) -> np.ndarray:
+        positions = self.get_joints()
+        positions_deg = np.degrees(positions)
+        positions_deg[:6] += hardware_offsets
+        return np.radians(positions_deg)
 
     def _check_port_availability(self) -> bool:
         """Check if the port is available and not being used by other processes."""

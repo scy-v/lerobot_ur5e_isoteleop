@@ -1,5 +1,5 @@
 record:
-  repo_id: &repo_id "scylearning/pick_greencube_into_trashbin" 
+  repo_id: &repo_id "scylearning/pour_water_into_beaker" 
   # repo_id: &repo_id "scylearning/pick_greencube_into_trashbin" 
   # Suggested format: <hf_username>/<description>, description = task.description -> Verb_SourceObject_prep_TargetObject
   # e.g. Pick up the green cube and put it into the trash bin -> pick_greencube_into_trashbin
@@ -11,9 +11,10 @@ record:
     control_mode: "isoteleop"
     dynamixel_config:
       port: "/dev/serial/by-id/usb-FTDI_FT232R_USB_UART_A50285BI-if00-port0"
-      use_gripper: &use_gripper False # whether the slave robot can use gripper
+      use_gripper: &use_gripper True # whether the slave robot can use gripper
+      hardware_offsets: [-19.07226562, -321, -397.7, -283.9, -88, -223.15429688] # The Calibration offsets between the master and the slave robot
       joint_ids: [1, 2, 3, 4, 5, 6]
-      joint_offsets: [0.0, 4.712, 6.283, 1.571, 1.571, 3.142]
+      joint_offsets: [0.0, 0, -6.283, 6.283, 0.0, 0.0]
       joint_signs: [1, 1, -1, 1, 1, 1]
       gripper_config: [7, 2.5157, 3.4790] # id, min, max
       
@@ -26,11 +27,12 @@ record:
     gripper_reverse: False  # If gripper moves opposite, flip this value
 
   task:
-    description: "Pick up the green cube and put it into the trash bin." # task description
-    num_episodes: 100 # number of episodes to record
+    # description: "Pick up the green cube and put it into the trash bin." # task description
+    description: "Pour the water from one beaker into another." # task description
+    num_episodes: 37 # number of episodes to record
     display: True # Whether to display the data during recording
     resume: False
-    resume_dataset: scylearning/pick_greencube_into_trashbin_20251105_v05 # dataset to resume from if resume is True
+    resume_dataset: scylearning/pour_water_into_beaker_20251117_v01 # dataset to resume from if resume is True
 
   time:
     episode_time_sec: 6000 # max time per episode in seconds
@@ -38,7 +40,7 @@ record:
     save_meta_period: 1 # Save metadata after every N episodes
 
   cameras:
-    wrist_cam_serial: "332322070928" # wrist camera serial number
+    wrist_cam_serial: "944622073455" # wrist camera serial number
     exterior_cam_serial: "213522070689" # exterior camera serial number
 
   storage:
@@ -52,5 +54,5 @@ replay:
     gripper_port: *gripper_port
 
 visualize:
-  dataset_name: scylearning/pick_greencube_into_trashbin_20251103_v03
-  episode_index: 0 # episode index to visualize
+  dataset_name: scylearning/pour_water_into_beaker_20251117_v01
+  episode_index: 52 # episode index to visualize

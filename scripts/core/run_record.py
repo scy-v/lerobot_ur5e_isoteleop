@@ -45,6 +45,7 @@ class RecordConfig:
         self.joint_offsets = dxl_cfg["joint_offsets"]
         self.joint_signs = dxl_cfg["joint_signs"]
         self.gripper_config = dxl_cfg["gripper_config"]
+        self.hardware_offsets = dxl_cfg["hardware_offsets"]
         self.control_mode = teleop.get("control_mode", "isoteleop")
         
         # robot config
@@ -136,6 +137,7 @@ def run_record(record_cfg: RecordConfig):
         teleop_config = UR5eTeleopConfig(        
             port=record_cfg.port,
             use_gripper=record_cfg.use_gripper,
+            hardware_offsets=record_cfg.hardware_offsets,
             joint_ids=record_cfg.joint_ids,
             joint_offsets=record_cfg.joint_offsets,
             joint_signs=record_cfg.joint_signs,

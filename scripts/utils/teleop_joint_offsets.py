@@ -43,8 +43,10 @@ def compute_joint_offsets(cfg, start_joints: List[float]):
         return np.abs(joint_val - start_joints[index])
 
     # Compute best offsets
-    curr_joints = driver.get_joints()
+    curr_joints = driver.get_joints_deg()
+    curr_modified_joints = driver.get_positions(cfg.hardware_offsets)
     logger.info("Dynamixel current joint positions: %s", curr_joints)
+    logger.info("Dynamixel current modified joint positions: %s", curr_modified_joints)
 
     # Close driver
     driver.close()
@@ -55,7 +57,7 @@ def compute_joint_offsets(cfg, start_joints: List[float]):
         best_offset = 0
         best_error = float('inf')
         for offset in np.linspace(-8 * np.pi, 8 * np.pi, 33):  # intervals of pi/2
-            error = joint_error(offset, i, curr_joints)
+            error = joint_error(offset, i, curr_modified_joints)
             if error < best_error:
                 best_error = error
                 best_offset = offset
@@ -77,6 +79,7 @@ class RecordConfig:
         self.port = dxl_cfg["port"]
         self.joint_ids = dxl_cfg["joint_ids"]
         self.joint_signs = dxl_cfg["joint_signs"]
+        self.hardware_offsets = dxl_cfg["hardware_offsets"]
 
         # Robot config
         self.robot_ip: str = robot["ip"]

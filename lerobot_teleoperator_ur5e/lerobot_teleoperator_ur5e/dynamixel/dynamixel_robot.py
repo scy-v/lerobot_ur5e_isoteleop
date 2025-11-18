@@ -10,6 +10,7 @@ class DynamixelRobot(Robot):
     def __init__(
         self,
         port: str,
+        hardware_offsets: Sequence[float],
         joint_ids: Sequence[int],
         joint_offsets: Sequence[float],
         joint_signs: Sequence[int],
@@ -39,7 +40,6 @@ class DynamixelRobot(Robot):
         if use_gripper and gripper_config is not None:
             assert joint_offsets is not None
             assert joint_signs is not None
-
             joint_ids = tuple(joint_ids) + (gripper_config[0],)
             joint_offsets = tuple(joint_offsets) + (0.0,)
             joint_signs = tuple(joint_signs) + (1,)
@@ -51,6 +51,7 @@ class DynamixelRobot(Robot):
             self.gripper_open_close = None
         
         self._use_gripper = use_gripper
+        self._hardware_offsets = hardware_offsets
         self._joint_ids = joint_ids
         self._joint_offsets = np.array(joint_offsets)
         self._joint_signs = np.array(joint_signs)
@@ -58,7 +59,7 @@ class DynamixelRobot(Robot):
 
         if real:
             self._driver = DynamixelDriver(joint_ids, port=port, baudrate=baudrate)
-            self._driver.set_torque_mode(False)
+            # self._driver.set_torque_mode(False)
         else:
             self._driver = FakeDynamixelDriver(joint_ids)
 
@@ -71,10 +72,8 @@ class DynamixelRobot(Robot):
         return len(self._joint_ids)
 
     def get_joint_state(self) -> np.ndarray:
-        pos = (self._driver.get_joints() - self._joint_offsets) * self._joint_signs
-
+        pos = (self._driver.get_positions(self._hardware_offsets) - self._joint_offsets) * self._joint_signs
         assert len(pos) == self.num_dofs()
-        
         if self.gripper_open_close is not None:
             # map pos to [0, 1]
             g_pos = (pos[-1] - self.gripper_open_close[0]) / (

@@ -8,6 +8,7 @@ from lerobot.teleoperators.config import TeleoperatorConfig
 class UR5eTeleopConfig(TeleoperatorConfig):
     port: str
     use_gripper: bool
+    hardware_offsets: list[float]
     joint_ids: list[int]
     joint_offsets: list[float]
     joint_signs: list[int]
