@@ -1,4 +1,9 @@
 # UR5e Master-Slave Teleoperation Data Collection
+<p align="center">
+  <img src="assets/robot.png" alt="Record" width="600">
+  <br>
+</p>
+
 ## 1. Environment Setup
 ### 1.1 Create and Activate Conda Environment
 ```bash

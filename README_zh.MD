@@ -1,4 +1,8 @@
 # UR5e 同构遥操作数据采集与回放指南
+<p align="center">
+  <img src="assets/robot.png" alt="Record" width="600">
+  <br>
+</p>
 
 ## 1. 环境配置
 
