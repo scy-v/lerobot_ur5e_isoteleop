@@ -1,5 +1,5 @@
 record:
-  repo_id: &repo_id "scylearning/pour_water_into_beaker" 
+  repo_id: &repo_id "scylearning/pick_greencube_into_trashbin" 
   # repo_id: &repo_id "scylearning/pick_greencube_into_trashbin" 
   # Suggested format: <hf_username>/<description>, description = task.description -> Verb_SourceObject_prep_TargetObject
   # e.g. Pick up the green cube and put it into the trash bin -> pick_greencube_into_trashbin
@@ -11,10 +11,10 @@ record:
     control_mode: "isoteleop"
     dynamixel_config:
       port: "/dev/serial/by-id/usb-FTDI_FT232R_USB_UART_A50285BI-if00-port0"
-      use_gripper: &use_gripper True # whether the slave robot can use gripper
       hardware_offsets: [-19.07226562, -321, -397.7, -283.9, -88, -223.15429688] # The Calibration offsets between the master and the slave robot
+      use_gripper: &use_gripper True # whether the slave robot can use gripper
       joint_ids: [1, 2, 3, 4, 5, 6]
-      joint_offsets: [0.0, 0, -6.283, 6.283, 0.0, 0.0]
+      joint_offsets: [1.571, 0.0, 0.0, 0.0, 0.0, 0]
       joint_signs: [1, 1, -1, 1, 1, 1]
       gripper_config: [7, 2.5157, 3.4790] # id, min, max
       
@@ -28,11 +28,11 @@ record:
 
   task:
     # description: "Pick up the green cube and put it into the trash bin." # task description
-    description: "Pour the water from one beaker into another." # task description
-    num_episodes: 37 # number of episodes to record
+    description: "Open the cabinet, place the reagent bottle inside, and close the cabinet." # task description
+    num_episodes: 100 # number of episodes to record
     display: True # Whether to display the data during recording
     resume: False
-    resume_dataset: scylearning/pour_water_into_beaker_20251117_v01 # dataset to resume from if resume is True
+    resume_dataset: scylearning/open_cabinet_place_reagent_bottle_inside_close_cabinet_20251119_v01 # dataset to resume from if resume is True
 
   time:
     episode_time_sec: 6000 # max time per episode in seconds
@@ -42,6 +42,8 @@ record:
   cameras:
     wrist_cam_serial: "944622073455" # wrist camera serial number
     exterior_cam_serial: "213522070689" # exterior camera serial number
+    width: 424 # 640 424
+    height: 240 # 360 240
 
   storage:
     push_to_hub: False # whether to push the dataset to your huggingface repo after recording

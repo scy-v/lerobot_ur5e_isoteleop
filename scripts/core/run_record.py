@@ -71,6 +71,8 @@ class RecordConfig:
         # cameras config
         self.wrist_cam_serial: str = cam["wrist_cam_serial"]
         self.exterior_cam_serial: str = cam["exterior_cam_serial"]
+        self.width: int = cam["width"]
+        self.height: int = cam["height"]
 
         # storage config
         self.push_to_hub: bool = storage.get("push_to_hub", False)
@@ -118,16 +120,16 @@ def run_record(record_cfg: RecordConfig):
         # Create RealSenseCamera configurations
         wrist_image_cfg = RealSenseCameraConfig(serial_number_or_name=record_cfg.wrist_cam_serial,
                                         fps=record_cfg.fps,
-                                        width=640,
-                                        height=480,
+                                        width=record_cfg.width,
+                                        height=record_cfg.height,
                                         color_mode=ColorMode.RGB,
                                         use_depth=False,
                                         rotation=Cv2Rotation.NO_ROTATION)
 
         exterior_image_cfg = RealSenseCameraConfig(serial_number_or_name=record_cfg.exterior_cam_serial,
                                         fps=record_cfg.fps,
-                                        width=640,
-                                        height=480,
+                                        width=record_cfg.width,
+                                        height=record_cfg.height,
                                         color_mode=ColorMode.RGB,
                                         use_depth=False,
                                         rotation=Cv2Rotation.NO_ROTATION)
