@@ -70,7 +70,7 @@ tools-check-rs
 ### 2.2 Map Gripper Serial Port
 For example, map the gripper to `/dev/ur5e_left_gripper` and make sure only one gripper USB device is connected:
 ```bash
-map_gripper.sh <gripper_port_name>
+map_gripper.sh ur5e_left_gripper
 ```
 Next, enter the mapped device into the `gripper_port` field in `cfg.yaml`.
 

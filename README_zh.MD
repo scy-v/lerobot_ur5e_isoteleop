@@ -70,7 +70,7 @@ tools-check-rs
 ### 2.2 固定夹爪串口映射
 例如，将夹爪映射到 `/dev/ur5e_left_gripper`, 执行此操作前，请确保仅连接一个夹爪的usb设备。
 ```bash
-map_gripper.sh <gripper_port_name>
+map_gripper.sh ur5e_left_gripper
 ```
 随后，将设定的映射值填入`cfg.yaml`中的`gripper_port`字段
 ### 2.3 获取主臂的固定串口标识符
