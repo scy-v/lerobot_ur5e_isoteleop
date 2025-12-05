@@ -11,10 +11,10 @@ record:
     control_mode: "isoteleop"
     dynamixel_config:
       port: "/dev/serial/by-id/usb-FTDI_FT232R_USB_UART_A50285BI-if00-port0"
-      hardware_offsets: [-19.07226562, -321, -397.7, -283.9, -88, -223.15429688] # The Calibration offsets between the master and the slave robot
+      hardware_offsets: [-19.07226562, -321, -397.7, -283.9, -88, -323.17382812] # The Calibration offsets between the master and the slave robot
       use_gripper: &use_gripper True # whether the slave robot can use gripper
       joint_ids: [1, 2, 3, 4, 5, 6]
-      joint_offsets: [1.571, 0.0, 0.0, 0.0, 0.0, 0]
+      joint_offsets: [1.571, 0.0, 0.0, 0.0, 0.0, 0.0]
       joint_signs: [1, 1, -1, 1, 1, 1]
       gripper_config: [7, 2.5157, 3.4790] # id, min, max
       

@@ -7,7 +7,7 @@ def get_vel(gripper):
 def main():
     gripper = PGE("/dev/ur5e_left_gripper")
     gripper.init_feedback()
-    gripper.set_force(100)
+    gripper.set_force(20)
     gripper.set_vel(100)
     print(f"gripper_vel: {get_vel(gripper)}")
 
