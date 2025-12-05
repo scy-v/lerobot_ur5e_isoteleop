@@ -25,7 +25,7 @@ pip install -e .
 mkdir ur_data_collection && cd ur_data_collection
 git clone https://github.com/scy-v/lerobot_ur5e_isoteleop.git
 cd lerobot_ur5e_isoteleop
-pip install -e .
+pip install -r requirements.txt # install all packages in editable mode
 ```
 
 ### 1.4 View Available Commands

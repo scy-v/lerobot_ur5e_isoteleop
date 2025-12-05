@@ -26,7 +26,7 @@ pip install -e .
 mkdir ur_data_collection && cd ur_data_collection
 git clone https://github.com/scy-v/lerobot_ur5e_isoteleop.git
 cd lerobot_ur5e_isoteleop
-pip install -e .
+pip install -r requirements.txt #以可编辑形式安装所有包
 ```
 
 ### 1.4 查看可运行的命令
