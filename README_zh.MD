@@ -15,9 +15,10 @@ conda activate ur_data
 ### 1.2 安装 lerobot
 ```bash
 # 安装指定版本 0.3.4
-# git checkout da5d2f3e9187fa4690e6667fe8b294cae49016d6
 git clone https://github.com/huggingface/lerobot.git
-pip install -e lerobot
+cd lerobot
+git checkout da5d2f3e9187fa4690e6667fe8b294cae49016d6
+pip install -e .
 ```
 
 ### 1.3 克隆并安装 UR5e 遥操作控制源码
