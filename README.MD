@@ -85,7 +85,10 @@ Next, enter the obtained serial identifier into the `port` field in `cfg.yaml` a
 sudo chmod 666 <your_master_port>
 ```
 
-### 2.4 Obtain Master-Slave Joint Angle Offset Circle
+### 2.4 Obtaining Master–Slave Zero-Offset
+> **⚠️ Note: The `hardware_offsets` in `cfg.yaml` should store the zero-position offsets between the master and slave arm joints to ensure their zero poses match.**
+
+### 2.5 Obtain Master-Slave Joint Angle Offset Circle
 > **⚠️ WARNING: Before recording data, you must complete this step to set the correct joint offset. Otherwise, the slave arm may move unexpectedly.**
 
 
