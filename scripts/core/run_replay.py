@@ -29,7 +29,7 @@ def run_replay(replay_cfg: ReplayConfig):
         gripper_port=replay_cfg.gripper_port,
     )
 
-    robot = robot = UR5e(robot_config)
+    robot = UR5e(robot_config)
     robot.connect()
     dataset = LeRobotDataset(replay_cfg.dataset_name, episodes=[episode_idx])
     actions = dataset.hf_dataset.select_columns("action")
