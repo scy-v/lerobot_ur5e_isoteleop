@@ -16,10 +16,13 @@ class ReplayConfig:
         # global config
         self.dataset_name: str = cfg["dataset_name"]
         self.episode_idx: str = cfg.get("episode_idx", 0)
+        self.debug: bool = cfg.get("debug", False)
 
         # robot config
         self.robot_ip: str = robot["ip"]
+        self.use_gripper: bool = robot["use_gripper"]
         self.gripper_port: str = robot["gripper_port"]
+        self.gripper_reverse: bool = robot["gripper_reverse"]
 
 def run_replay(replay_cfg: ReplayConfig):
     episode_idx = replay_cfg.episode_idx
@@ -27,13 +30,16 @@ def run_replay(replay_cfg: ReplayConfig):
     robot_config = UR5eConfig(
         robot_ip=replay_cfg.robot_ip,
         gripper_port=replay_cfg.gripper_port,
+        debug=replay_cfg.debug,
+        use_gripper=replay_cfg.use_gripper,
+        gripper_reverse=replay_cfg.gripper_reverse,
     )
 
     robot = UR5e(robot_config)
     robot.connect()
     dataset = LeRobotDataset(replay_cfg.dataset_name, episodes=[episode_idx])
     actions = dataset.hf_dataset.select_columns("action")
-    log_say(f"Replaying episode {episode_idx}")
+    logging.info(f"Replaying episode {episode_idx}")
     for idx in range(dataset.num_frames):
         t0 = time.perf_counter()
 
