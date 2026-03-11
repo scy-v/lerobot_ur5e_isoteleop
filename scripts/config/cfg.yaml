@@ -59,5 +59,5 @@ replay:
     gripper_reverse: *gripper_reverse
 
 visualize:
-  dataset_name: scylearning/pour_water_into_beaker_20251117_v01
-  episode_index: 52 # episode index to visualize
+  dataset_name: scylearning/open_drawer_place_beaker_inside_close_drawer_20251119_v01
+  episode_index: 50 # episode index to visualize

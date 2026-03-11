@@ -11,6 +11,7 @@ setup(
         "pydhgripper",
         "pyrealsense2",
         "ur-rtde",
+        "scipy",
     ],
     python_requires=">=3.10",
     classifiers=[

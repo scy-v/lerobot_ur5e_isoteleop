@@ -156,6 +156,7 @@ def run_record(record_cfg: RecordConfig):
             gripper_reverse = record_cfg.gripper_reverse,
             gripper_bin_threshold = record_cfg.gripper_bin_threshold
         )
+        
         # Initialize the robot and teleoperator
         robot = UR5e(robot_config)
         teleop = UR5eTeleop(teleop_config)

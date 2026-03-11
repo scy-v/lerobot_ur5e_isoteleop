@@ -5,6 +5,9 @@ import threading
 from rtde_control import RTDEControlInterface
 from rtde_receive import RTDEReceiveInterface
 
+import numpy as np
+from scipy.spatial.transform import Rotation as R
+
 from lerobot.cameras import make_cameras_from_configs
 from lerobot.utils.errors import DeviceNotConnectedError, DeviceAlreadyConnectedError
 from lerobot.robots.robot import Robot
@@ -220,6 +223,8 @@ class UR5e(Robot):
 
         # Read tcp pose
         tcp_pose = self._arm["rtde_r"].getActualTCPPose()
+        tcp_offset = self._arm["rtde_c"].getTCPOffset()
+        ee_pose = self.tcp_to_ee_pose(tcp_pose, tcp_offset)
 
         # Read tcp speed
         tcp_speed = self._arm["rtde_r"].getActualTCPSpeed()
@@ -240,7 +245,7 @@ class UR5e(Robot):
             obs_dict[f"joint_{i+1}.force"] = joint_force[i]
 
         for i, axis in enumerate(["x", "y", "z","rx","ry","rz"]):
-            obs_dict[f"tcp_pose.{axis}"] = tcp_pose[i]
+            obs_dict[f"tcp_pose.{axis}"] = ee_pose[i]
             obs_dict[f"tcp_speed.{axis}"] = tcp_speed[i]
             if i < 3: # tcp_acceleration have only 3 axes
                 obs_dict[f"tcp_acc.{axis}"] = tcp_acceleration[i]
@@ -266,6 +271,21 @@ class UR5e(Robot):
 
         return obs_dict
 
+    def tcp_to_ee_pose(self, tcp_pose, tcp_offset):
+        T_tcp = np.eye(4)
+        T_tcp[:3,:3] = R.from_rotvec(tcp_pose[3:]).as_matrix()
+        T_tcp[:3,3] = tcp_pose[:3]
+
+        T_off = np.eye(4)
+        T_off[:3,:3] = R.from_rotvec(tcp_offset[3:]).as_matrix()
+        T_off[:3,3] = tcp_offset[:3]
+
+        T_ee = T_tcp @ np.linalg.inv(T_off)
+
+        ee_pos = T_ee[:3,3]
+        ee_rot = R.from_matrix(T_ee[:3,:3]).as_rotvec()
+        return np.concatenate([ee_pos, ee_rot])
+    
     def disconnect(self) -> None:
         if not self.is_connected:
             return
