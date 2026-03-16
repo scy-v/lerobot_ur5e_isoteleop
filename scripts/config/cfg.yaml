@@ -26,7 +26,7 @@ record:
     gripper_bin_threshold: 0.98 # threshold to determine gripper is closed
     gripper_port: &gripper_port "/dev/ur5e_left_gripper" # gripper_port
     gripper_reverse: &gripper_reverse False  # If gripper moves opposite, flip this value
-    control_space: "force" # "force" or "joint"
+    control_space: "joint" # "force" or "joint"
     robot_urdf_path: assets/urdf/ur5e.urdf
     force_mode:
       kp: 2000 
