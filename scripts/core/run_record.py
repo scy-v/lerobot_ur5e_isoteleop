@@ -30,7 +30,9 @@ class RecordConfig:
         robot = cfg["robot"]
         teleop = cfg["teleop"]
         dxl_cfg = teleop["dynamixel_config"]
-
+        force_cfg = robot["force_mode"]
+        joint_cfg = robot["joint_mode"]
+        
         # global config
         self.repo_id: str = cfg["repo_id"]
         self.debug: bool = cfg.get("debug", True)
@@ -55,7 +57,22 @@ class RecordConfig:
         self.close_threshold = robot["close_threshold"]
         self.gripper_reverse: str = robot["gripper_reverse"]
         self.gripper_bin_threshold: float = robot["gripper_bin_threshold"]
-
+        self.control_space: str = robot["control_space"]
+        self.robot_urdf_path: str = robot["robot_urdf_path"]
+        self.kp: int = force_cfg["kp"]
+        self.kd: int = force_cfg["kd"]
+        self.kp_rot: int = force_cfg["kp_rot"]
+        self.kd_rot: int = force_cfg["kd_rot"]
+        self.rtde_freq: int = force_cfg["rtde_freq"]
+        self.select_vector: list= force_cfg["select_vector"]
+        self.force_limit: list= force_cfg["force_limit"]
+        self.pos_delta: int = force_cfg["pos_delta"]
+        self.vel_delta: int = force_cfg["vel_delta"]
+        self.gain_scale: int = force_cfg["gain_scale"]
+        self.look_ahead_time: int = joint_cfg["look_ahead_time"]
+        self.dt: int = joint_cfg["dt"]
+        self.gain: int = joint_cfg["gain"]
+        
         # task config
         self.num_episodes: int = task.get("num_episodes", 1)
         self.display: bool = task.get("display", True)
@@ -76,7 +93,6 @@ class RecordConfig:
 
         # storage config
         self.push_to_hub: bool = storage.get("push_to_hub", False)
-
 
 def check_joint_offsets(record_cfg: RecordConfig):
     """Check the joint_offsets is set and correct."""
@@ -149,13 +165,29 @@ def run_record(record_cfg: RecordConfig):
         robot_config = UR5eConfig(
             robot_ip=record_cfg.robot_ip,
             gripper_port=record_cfg.gripper_port,
-            cameras = camera_config,
-            debug = record_cfg.debug,
-            close_threshold = record_cfg.close_threshold,
-            use_gripper = record_cfg.use_gripper,
-            gripper_reverse = record_cfg.gripper_reverse,
-            gripper_bin_threshold = record_cfg.gripper_bin_threshold
+            cameras=camera_config,
+            debug=record_cfg.debug,
+            close_threshold=record_cfg.close_threshold,
+            use_gripper=record_cfg.use_gripper,
+            gripper_reverse=record_cfg.gripper_reverse,
+            gripper_bin_threshold=record_cfg.gripper_bin_threshold,
+            control_space=record_cfg.control_space,
+            robot_urdf_path=record_cfg.robot_urdf_path,
+            kp=record_cfg.kp,
+            kd=record_cfg.kd, 
+            kp_rot=record_cfg.kp_rot, 
+            kd_rot=record_cfg.kd_rot, 
+            rtde_freq=record_cfg.rtde_freq, 
+            select_vector=record_cfg.select_vector, 
+            force_limit=record_cfg.force_limit, 
+            look_ahead_time=record_cfg.look_ahead_time, 
+            dt=record_cfg.dt,
+            gain=record_cfg.gain,
+            pos_delta=record_cfg.pos_delta,
+            vel_delta=record_cfg.vel_delta,
+            gain_scale=record_cfg.gain_scale
         )
+        
         # Initialize the robot and teleoperator
         robot = UR5e(robot_config)
         teleop = UR5eTeleop(teleop_config)
@@ -259,18 +291,12 @@ def run_record(record_cfg: RecordConfig):
         if record_cfg.push_to_hub:
             dataset.push_to_hub()
 
-    except Exception as e:
-        logging.info(f"====== [ERROR] {e} ======")
+    except (Exception, KeyboardInterrupt) as e:
+        logging.info(f"====== [ERROR] {e} ======" if isinstance(e, Exception) else "\n====== [INFO] Ctrl+C detected ======")
+        robot.disconnect()
+        teleop.disconnect()
         dataset_path = Path(HF_LEROBOT_HOME) / dataset_name
         handle_incomplete_dataset(dataset_path)
-        sys.exit(1)
-
-    except KeyboardInterrupt:
-        logging.info("\n====== [INFO] Ctrl+C detected, cleaning up incomplete dataset... ======")
-        dataset_path = Path(HF_LEROBOT_HOME) / dataset_name
-        handle_incomplete_dataset(dataset_path)
-        sys.exit(1)
-
 
 def main():
     parent_path = Path(__file__).resolve().parent

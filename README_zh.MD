@@ -46,7 +46,8 @@ ur5e-help
 #   utils-joint-offsets   Compute joint offsets for teleoperation
 
 # Tool Commands:
-#   tools-check-dataset   Check local dataset information
+#   tools-check-dataset   Check local dataset integrity
+#   tools-check-info      Check local dataset information
 #   tools-check-rs        Retrieve connected RealSense camera serial numbers
 
 # Shell Tools:

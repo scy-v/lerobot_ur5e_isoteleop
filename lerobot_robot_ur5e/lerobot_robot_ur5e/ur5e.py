@@ -5,12 +5,17 @@ import threading
 from rtde_control import RTDEControlInterface
 from rtde_receive import RTDEReceiveInterface
 
+import numpy as np
+from scipy.spatial.transform import Rotation as R
+
 from lerobot.cameras import make_cameras_from_configs
 from lerobot.utils.errors import DeviceNotConnectedError, DeviceAlreadyConnectedError
 from lerobot.robots.robot import Robot
 from pyDHgripper import PGE
 from .config_ur5e import UR5eConfig
-
+from pathlib import Path
+import pinocchio as pin
+from datetime import datetime
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 class UR5e(Robot):
@@ -32,18 +37,25 @@ class UR5e(Robot):
         self._gripper_position = 1
         self._velocity = 0.5 # not used in current version
         self._acceleration = 0.5 # not used in current version
-        self._dt = 0.002
-        self._lookahead_time = 0.2
-        self._gain = 100
         self._last_gripper_position = 1
-        
+        self.urdf_path=Path(__file__).parents[2] / self.config.robot_urdf_path
+        self.task_frame= [0,0,0,0,0,0]
+        self.type=2
+            
     def connect(self) -> None:
         if self.is_connected:
             raise DeviceAlreadyConnectedError(f"{self.name} is already connected.")
 
         # Connect to robot
         self._arm['rtde_r'], self._arm['rtde_c'] = self._check_ur5e_connection(self.config.robot_ip)
-
+        
+        # Set force mode gain scaling
+        if self.config.control_space == "force":
+            self._arm["rtde_c"].forceModeSetGainScaling(self.config.gain_scale)
+        
+        # Init_pinocchio
+        self._init_pinocchio(self.urdf_path, base_frame="base", ee_frame="tool0")
+        
         # Initialize gripper
         if self.config.use_gripper:
             self._gripper = self._check_gripper_connection(self.config.gripper_port)
@@ -185,30 +197,89 @@ class UR5e(Robot):
             "joint_6.pos": float,
             "gripper_position": float,
         }
+        
+    def _init_pinocchio(self, urdf_path: str, base_frame: str = "base", ee_frame: str = "tool0"):
+        self.model = pin.buildModelFromUrdf(urdf_path)
+        self.base_frame = base_frame
+        self.ee_frame = ee_frame
+        self.base_id = self.model.getFrameId(base_frame)
+        self.ee_frame_id = self.model.getFrameId(ee_frame)
+        self.data=self.model.createData()
+        
+    def _calculate_force(self, target_pos, curr_pos, curr_vel):
+        # position
+        diff_p = np.clip(np.array(target_pos[:3]) - np.array(curr_pos[:3]), -self.config.pos_delta, self.config.pos_delta)
+        diff_d = np.clip(-np.array(curr_vel[:3]), -self.config.vel_delta, self.config.vel_delta)
+        force_pos = self.config.kp * diff_p + self.config.kd * diff_d
+        
+        # orientation (Pinocchio version)
+        R_target = pin.exp3(np.array(target_pos[3:]))
+        R_curr   = pin.exp3(np.array(curr_pos[3:]))
+        R_err = R_target @ R_curr.T
+        rot_err = pin.log3(R_err)
+        torque = (self.config.kp_rot * rot_err - self.config.kd_rot * np.array(curr_vel[3:])) / self.config.rtde_freq
 
+        return np.concatenate((force_pos, torque))  
+
+    def _fk(self, joint_positions):
+        q = np.array(joint_positions)
+        
+        # forwardKinematics
+        pin.forwardKinematics(self.model, self.data, q)
+        pin.updateFramePlacements(self.model, self.data)
+
+        M_tool = self.data.oMf[self.ee_frame_id]
+        M_base = self.data.oMf[self.base_id]
+
+        M_rel = M_base.inverse() * M_tool
+
+        position = M_rel.translation
+        rotvec = pin.log3(M_rel.rotation)
+
+        return np.concatenate([position, rotvec])
+    
+    def _calculate_ft_target(self, action: dict[str, Any]) -> list[float]:
+        joint_positions = [float(action[f"joint_{i+1}.pos"]) for i in range(self._num_joints)]
+        target_pose = self._fk(joint_positions)
+        curr_pose = [
+            float(self.obs_dict["tcp_pose.x"]), float(self.obs_dict["tcp_pose.y"]), float(self.obs_dict["tcp_pose.z"]),
+            float(self.obs_dict["tcp_pose.rx"]), float(self.obs_dict["tcp_pose.ry"]), float(self.obs_dict["tcp_pose.rz"])
+        ]
+        curr_vel = [
+            float(self.obs_dict["tcp_speed.x"]), float(self.obs_dict["tcp_speed.y"]), float(self.obs_dict["tcp_speed.z"]),
+            float(self.obs_dict["tcp_speed.rx"]), float(self.obs_dict["tcp_speed.ry"]), float(self.obs_dict["tcp_speed.rz"])
+        ]
+        ft_target = self._calculate_force(target_pose, curr_pose, curr_vel)  # [Fx,Fy,Fz,Tx,Ty,Tz]
+        return ft_target
+    
     def send_action(self, action: dict[str, Any]) -> dict[str, Any]:
         if not self.is_connected:
             raise DeviceNotConnectedError(f"{self} is not connected.")
 
-        joint_positions = [action[f"joint_{i+1}.pos"] for i in range(self._num_joints)]
-
+        joint_positions = [float(action[f"joint_{i+1}.pos"]) for i in range(self._num_joints)]
+        
+        ft_target=self._calculate_ft_target(action)
+        
         if not self.config.debug:
             t_start = self._arm["rtde_c"].initPeriod()
-            self._arm["rtde_c"].servoJ(joint_positions, self._velocity, self._acceleration, self._dt, self._lookahead_time, self._gain)
+            if self.config.control_space == "joint":
+                self._arm["rtde_c"].servoJ(joint_positions, self._velocity, self._acceleration, self.config.dt, self.config.look_ahead_time, self.config.gain)
+            elif self.config.control_space == "force":
+                self._arm["rtde_c"].forceMode(self.task_frame,self.config.select_vector,ft_target,self.type,self.config.force_limit)
             self._arm["rtde_c"].waitPeriod(t_start)
-
+                
         if "gripper_position" in action:
-            self._gripper_position = action["gripper_position"]
+            self._gripper_position = float(action["gripper_position"])
             
         return action
-
+    
     def get_observation(self) -> dict[str, Any]:
         if not self.is_connected:
             raise DeviceNotConnectedError(f"{self} is not connected.")
         
         # Read joint positions
         joint_position = self._arm["rtde_r"].getActualQ()
-        
+            
         # Read joint velocities
         joint_velocity = self._arm["rtde_r"].getActualQd()
 
@@ -220,6 +291,8 @@ class UR5e(Robot):
 
         # Read tcp pose
         tcp_pose = self._arm["rtde_r"].getActualTCPPose()
+        tcp_offset = self._arm["rtde_c"].getTCPOffset()
+        ee_pose = self.tcp_to_ee_pose(tcp_pose, tcp_offset)
 
         # Read tcp speed
         tcp_speed = self._arm["rtde_r"].getActualTCPSpeed()
@@ -231,46 +304,62 @@ class UR5e(Robot):
         tcp_force = self._arm["rtde_r"].getActualTCPForce()
 
         # Prepare observation dictionary
-        obs_dict = {}
+        self.obs_dict = {}
 
         for i in range(len(joint_position)):
-            obs_dict[f"joint_{i+1}.pos"] = joint_position[i]
-            obs_dict[f"joint_{i+1}.vel"] = joint_velocity[i]
-            obs_dict[f"joint_{i+1}.acc"] = joint_acceleration[i]
-            obs_dict[f"joint_{i+1}.force"] = joint_force[i]
+            self.obs_dict[f"joint_{i+1}.pos"] = joint_position[i]
+            self.obs_dict[f"joint_{i+1}.vel"] = joint_velocity[i]
+            self.obs_dict[f"joint_{i+1}.acc"] = joint_acceleration[i]
+            self.obs_dict[f"joint_{i+1}.force"] = joint_force[i]
 
         for i, axis in enumerate(["x", "y", "z","rx","ry","rz"]):
-            obs_dict[f"tcp_pose.{axis}"] = tcp_pose[i]
-            obs_dict[f"tcp_speed.{axis}"] = tcp_speed[i]
+            self.obs_dict[f"tcp_pose.{axis}"] = ee_pose[i]
+            self.obs_dict[f"tcp_speed.{axis}"] = tcp_speed[i]
             if i < 3: # tcp_acceleration have only 3 axes
-                obs_dict[f"tcp_acc.{axis}"] = tcp_acceleration[i]
-            obs_dict[f"tcp_force.{axis}"] = tcp_force[i]
+                self.obs_dict[f"tcp_acc.{axis}"] = tcp_acceleration[i]
+            self.obs_dict[f"tcp_force.{axis}"] = tcp_force[i]
 
         if self.config.use_gripper:
-            obs_dict["gripper_raw_position"] = self._gripper.pos
-            obs_dict["gripper_action_bin"] = self._last_gripper_position
-            obs_dict["gripper_raw_bin"] = 0 if self._gripper.pos <= self.config.gripper_bin_threshold else 1
+            self.obs_dict["gripper_raw_position"] = self._gripper.pos
+            self.obs_dict["gripper_action_bin"] = self._last_gripper_position
+            self.obs_dict["gripper_raw_bin"] = 0 if self._gripper.pos <= self.config.gripper_bin_threshold else 1
         else:
-            obs_dict["gripper_raw_position"] = None
-            obs_dict["gripper_action_bin"] = None
-            obs_dict["gripper_raw_bin"] = None
+            self.obs_dict["gripper_raw_position"] = None
+            self.obs_dict["gripper_action_bin"] = None
+            self.obs_dict["gripper_raw_bin"] = None
 
         # Capture images from cameras
         for cam_key, cam in self.cameras.items():
             start = time.perf_counter()
-            obs_dict[cam_key] = cam.read()
+            self.obs_dict[cam_key] = cam.read()
             dt_ms = (time.perf_counter() - start) * 1e3
             logger.debug(f"{self} read {cam_key}: {dt_ms:.1f}ms")
 
-        self._prev_observation = obs_dict
+        self._prev_observation = self.obs_dict
 
-        return obs_dict
+        return self.obs_dict
 
+    def tcp_to_ee_pose(self, tcp_pose, tcp_offset):
+        T_tcp = np.eye(4)
+        T_tcp[:3,:3] = R.from_rotvec(tcp_pose[3:]).as_matrix()
+        T_tcp[:3,3] = tcp_pose[:3]
+
+        T_off = np.eye(4)
+        T_off[:3,:3] = R.from_rotvec(tcp_offset[3:]).as_matrix()
+        T_off[:3,3] = tcp_offset[:3]
+
+        T_ee = T_tcp @ np.linalg.inv(T_off)
+
+        ee_pos = T_ee[:3,3]
+        ee_rot = R.from_matrix(T_ee[:3,:3]).as_rotvec()
+        return np.concatenate([ee_pos, ee_rot])
+    
     def disconnect(self) -> None:
         if not self.is_connected:
             return
 
         if self._arm is not None:
+            self._arm["rtde_c"].forceMode(self.task_frame,[0, 0, 0, 0, 0, 0],np.array([0, 0, 0, 0, 0, 0]),self.type,self.config.force_limit)
             self._arm["rtde_c"].disconnect()
             self._arm["rtde_r"].disconnect()
 
@@ -322,3 +411,5 @@ class UR5e(Robot):
     @config.setter
     def config(self, value):
         self._config = value
+    
+    

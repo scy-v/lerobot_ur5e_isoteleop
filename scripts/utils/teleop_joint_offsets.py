@@ -6,6 +6,7 @@ import logging
 
 from rtde_receive import RTDEReceiveInterface
 from lerobot_teleoperator_ur5e.dynamixel import DynamixelDriver
+np.set_printoptions(suppress=True)
 
 # ------------------------ Logging Setup ------------------------ #
 logging.basicConfig(level=logging.INFO, format='%(message)s')
@@ -18,7 +19,8 @@ def get_start_joints(cfg) -> List[float]:
         logger.info("\n===== [ROBOT] Connecting to UR5e robot =====")
         rtde_r = RTDEReceiveInterface(cfg.robot_ip)
         joint_positions = rtde_r.getActualQ()
-        logger.info(f"[ROBOT] Current joint positions: {joint_positions}")
+        logger.info(f"[ROBOT] Current joint positions (rad): {joint_positions}")
+        logger.info(f"[ROBOT] Current joint positions (deg): {np.rad2deg(joint_positions)}")
         logger.info("===== [ROBOT] UR5e connected successfully =====\n")
         return joint_positions
     except Exception as e:
@@ -46,7 +48,8 @@ def compute_joint_offsets(cfg, start_joints: List[float]):
     curr_joints = driver.get_joints_deg()
     curr_modified_joints = driver.get_positions(cfg.hardware_offsets)
     logger.info("Dynamixel current joint positions: %s", curr_joints)
-    logger.info("Dynamixel current modified joint positions: %s", curr_modified_joints)
+    logger.info("Dynamixel current modified joint positions (rad): %s", curr_modified_joints)
+    logger.info("Dynamixel current modified joint positions (deg): %s", np.rad2deg(curr_modified_joints))
 
     # Close driver
     driver.close()

@@ -1,5 +1,6 @@
 record:
-  repo_id: &repo_id "scylearning/pick_greencube_into_trashbin" 
+  repo_id: &repo_id "scylearning/move_reagent_bottle" 
+  # repo_id: &repo_id "scylearning/move_test_tube" 
   # repo_id: &repo_id "scylearning/pick_greencube_into_trashbin" 
   # Suggested format: <hf_username>/<description>, description = task.description -> Verb_SourceObject_prep_TargetObject
   # e.g. Pick up the green cube and put it into the trash bin -> pick_greencube_into_trashbin
@@ -11,10 +12,10 @@ record:
     control_mode: "isoteleop"
     dynamixel_config:
       port: "/dev/serial/by-id/usb-FTDI_FT232R_USB_UART_A50285BI-if00-port0"
-      hardware_offsets: [-19.07226562, -321, -397.7, -283.9, -88, -323.17382812] # The Calibration offsets between the master and the slave robot
+      hardware_offsets: [-216.65, -281.865, -233.085, -281.25, 47.11, -158.466] # The Calibration offsets between the master and the slave robot
       use_gripper: &use_gripper True # whether the slave robot can use gripper
       joint_ids: [1, 2, 3, 4, 5, 6]
-      joint_offsets: [1.571, 0.0, 0.0, 0.0, 0.0, 0.0]
+      joint_offsets: [0.0, 0.0, -3.142, 0.0, 0.0, 0.0]
       joint_signs: [1, 1, -1, 1, 1, 1]
       gripper_config: [7, 2.5157, 3.4790] # id, min, max
       
@@ -25,10 +26,27 @@ record:
     gripper_bin_threshold: 0.98 # threshold to determine gripper is closed
     gripper_port: &gripper_port "/dev/ur5e_left_gripper" # gripper_port
     gripper_reverse: &gripper_reverse False  # If gripper moves opposite, flip this value
+    control_space: "force" # "force" or "joint"
+    robot_urdf_path: assets/urdf/ur5e.urdf
+    force_mode:
+      kp: 2000 
+      kd: 200 
+      kp_rot: 4000
+      kd_rot: 800
+      rtde_freq: 125
+      select_vector: [1, 1, 1, 1, 1, 1]
+      force_limit: [2,2,2,2,2,2]
+      pos_delta: 0.2
+      vel_delta: 0.2   
+      gain_scale: 1.5
+    joint_mode:
+      look_ahead_time: 0.2
+      dt: 0.002
+      gain: 100
 
   task:
-    # description: "Pick up the green cube and put it into the trash bin." # task description
-    description: "Open the cabinet, place the reagent bottle inside, and close the cabinet." # task description
+    description: "Move the reagent bottle to the diagonal position of the bottle rack." # task description
+    # description: "Move the test tube from one side of the rack to the other." # task description
     num_episodes: 100 # number of episodes to record
     display: True # Whether to display the data during recording
     resume: False
@@ -40,8 +58,8 @@ record:
     save_meta_period: 1 # Save metadata after every N episodes
 
   cameras:
-    wrist_cam_serial: "944622073455" # wrist camera serial number
-    exterior_cam_serial: "213522070689" # exterior camera serial number
+    wrist_cam_serial: "151222071369" # wrist camera serial number
+    exterior_cam_serial: "151322070364" # exterior camera serial number
     width: 424 # 640 424
     height: 240 # 360 240
 
@@ -59,5 +77,9 @@ replay:
     gripper_reverse: *gripper_reverse
 
 visualize:
-  dataset_name: scylearning/pour_water_into_beaker_20251117_v01
-  episode_index: 52 # episode index to visualize
+  dataset_name: scylearning/move_reagent_bottle_20260316_v01
+  episode_index: 0 # episode index to visualize
+
+check_dataset:
+  dataset_name: scylearning/move_reagent_bottle_20260316_v01
+
