@@ -49,6 +49,7 @@ ur5e-help
 #   tools-check-dataset   Check local dataset integrity
 #   tools-check-info      Check local dataset information
 #   tools-check-rs        Retrieve connected RealSense camera serial numbers
+#   tools-prune-dataset   Prune episodes from dataset by Episode ID
 
 # Shell Tools:
 #   map_gripper.sh        Map Gripper Serial Port
@@ -154,7 +155,18 @@ lerobot-edit-dataset
 ```
 - 更多数据集处理命令，请参考 [LeRobot](https://huggingface.co/docs/lerobot/using_dataset_tools)
 
-## 8. 录制控制按键说明
+## 8. 数据集检查与裁剪
+- 使用以下命令检查数据集读取是否正确，尤其是视频帧缺失情况：
+```bash
+tools-check-dataset
+```
+- 若发现视频帧缺失，可运行以下命令生成新数据集，同时保留原数据集，新数据集会删除指定的 `episode ID`：
+```
+tools-prune-dataset "[id1,..., idN]"
+```
+- 该工具可删除视频帧缺失以及正常的数据索引。
+  
+## 9. 录制控制按键说明
 1. **右方向键**  
    1. 按下右方向键: 结束当前 episode 的录制并保存数据，程序将暂停等待。
    2. 进入**复位**阶段: 按回车键以继续（此时从臂会直接跟随主臂运动），请通过主臂将从臂复位至初始位姿。
@@ -168,7 +180,7 @@ lerobot-edit-dataset
 4. **Ctrl+c或抛出异常**
    - 按下或发生异常时：自动进入异常处理阶段，提示用户是否删除当前未完成的录制数据
   
-## 9. 数据集命名与记录详解
+## 10. 数据集命名与记录详解
 ### 1. 数据集命名
 <p align="center">
   <img src="assets/dataset.png" alt="dataset" width="600">
@@ -206,5 +218,5 @@ lerobot-edit-dataset
 4. 运行命令 `ur5e-record`，为确保安全， 请保证主臂与从臂关节角近似，`ur5e-record` 会自动执行 `2.4 获取主臂-从臂关节角误差周期` 检查，然后按照 `8. 录制控制按键说明` 完成录制操作。
 5. 数据记录结束后，数据集同级目录会生成 `dataset_info.txt` 文件，用于保存本地数据集信息。如果手动删除过数据集，可通过以下命令更新记录信息：
 ```bash
-tools-check-dataset
+tools-check-info
 ```

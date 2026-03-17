@@ -16,7 +16,8 @@ Tool Commands:
   tools-check-dataset   Check local dataset integrity
   tools-check-info      Check local dataset information
   tools-check-rs        Retrieve connected RealSense camera serial numbers
-
+  tools-prune-dataset   Prune episodes from dataset by Episode ID
+          
 Shell Tools:
   map_gripper.sh        Map Gripper Serial Port
   check_master_port.sh  Get the Master Arm's Persistent Serial Identifier

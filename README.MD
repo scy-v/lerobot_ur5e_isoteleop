@@ -48,6 +48,7 @@ ur5e-help
 #   tools-check-dataset   Check local dataset integrity
 #   tools-check-info      Check local dataset information
 #   tools-check-rs        Retrieve connected RealSense camera serial numbers
+#   tools-prune-dataset   Prune episodes from dataset by Episode ID
 
 # Shell Tools:
 #   map_gripper.sh        Map Gripper Serial Port
@@ -158,7 +159,19 @@ lerobot-edit-dataset
 ```
 - For more dataset processing commands, see [LeRobot](https://huggingface.co/docs/lerobot/using_dataset_tools).
 
-## 8. Recording Control Keys
+## 8. Dataset Check and Pruning
+- Run the following command to verify dataset integrity, especially for missing video frames:
+  
+```bash
+tools-check-dataset
+```
+- If missing frames are detected, create a new dataset excluding the affected episode IDs while keeping the original dataset intact:
+
+```bash
+tools-prune-dataset "[id1,...,idN]"
+```
+- This tool can remove episodes with missing frames or any specified episodes.
+## 9. Recording Control Keys
 
 1. **Right Arrow Key**  
    1. Press the right arrow key: end the current episode and save the data. The program will pause.  
@@ -174,7 +187,7 @@ lerobot-edit-dataset
 4. **Ctrl+C or Exception**
    - Pressing or on exception: enters exception handling and asks whether to delete the incomplete dataset.
   
-## 9. Dataset Naming and Recording Details
+## 10. Dataset Naming and Recording Details
 ### 1. Dataset Naming
 <p align="center">
   <img src="assets/dataset.png" alt="dataset" width="600">
@@ -211,5 +224,5 @@ lerobot-edit-dataset
 4. Run `ur5e-record`. For safety, ensure the master and slave arm joint angles are approximately aligned; `ur5e-record` will automatically perform the `2.4 Master-Slave Joint Angle Error Check`. Then follow `8. Recording Control Keys` to complete the recording.
 5. After recording, a `dataset_info.txt` file will be automatically created in the same directory to store local dataset information. If you have manually deleted any datasets, update the `dataset_info.txt` using:
 ```bash
-tools-check-dataset
+tools-check-info
 ```

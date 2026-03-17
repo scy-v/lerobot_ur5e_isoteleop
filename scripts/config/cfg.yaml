@@ -78,8 +78,11 @@ replay:
 
 visualize:
   dataset_name: scylearning/move_reagent_bottle_20260317_v01
-  episode_index: 99 # episode index to visualize
+  episode_index: 100 # episode index to visualize
 
 check_dataset:
   dataset_name: scylearning/move_reagent_bottle_20260317_v01
 
+prune_episodes:
+  old_dataset_name: scylearning/move_reagent_bottle_20260317_v01
+  new_dataset_name: scylearning/move_reagent_bottle_20260317_v01_pruned
