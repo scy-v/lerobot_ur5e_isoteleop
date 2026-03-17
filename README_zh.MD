@@ -157,10 +157,12 @@ lerobot-edit-dataset
 
 ## 8. 数据集检查与裁剪
 - 使用以下命令检查数据集读取是否正确，尤其是视频帧缺失情况：
+- 注意修改cfg.yaml中 `check_dataset.dataset_name`
 ```bash
 tools-check-dataset
 ```
 - 若发现视频帧缺失，可运行以下命令生成新数据集，同时保留原数据集，新数据集会删除指定的 `episode ID`：
+- 注意修改cfg.yaml中 `prune_episodes.old/new_dataset_name`
 ```
 tools-prune-dataset "[id1,..., idN]"
 ```

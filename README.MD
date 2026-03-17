@@ -161,12 +161,12 @@ lerobot-edit-dataset
 
 ## 8. Dataset Check and Pruning
 - Run the following command to verify dataset integrity, especially for missing video frames:
-  
+- Note update `check_dataset.dataset_name` in cfg.yaml.
 ```bash
 tools-check-dataset
 ```
 - If missing frames are detected, create a new dataset excluding the affected episode IDs while keeping the original dataset intact:
-
+- Note update `prune_episodes.old/new_dataset_name` in cfg.yaml.
 ```bash
 tools-prune-dataset "[id1,...,idN]"
 ```
