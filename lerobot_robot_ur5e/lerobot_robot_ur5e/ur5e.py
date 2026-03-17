@@ -354,6 +354,9 @@ class UR5e(Robot):
         ee_rot = R.from_matrix(T_ee[:3,:3]).as_rotvec()
         return np.concatenate([ee_pos, ee_rot])
     
+    def stop_force(self):
+        self._arm["rtde_c"].forceMode(self.task_frame,[0, 0, 0, 0, 0, 0],np.array([0, 0, 0, 0, 0, 0]),self.type,self.config.force_limit)
+        
     def disconnect(self) -> None:
         if not self.is_connected:
             return

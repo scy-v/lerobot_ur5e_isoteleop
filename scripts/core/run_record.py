@@ -252,7 +252,8 @@ def run_record(record_cfg: RecordConfig):
                 events["exit_early"] = False
                 dataset.clear_episode_buffer()
                 continue
-
+            
+            robot.stop_force()
             dataset.save_episode()
 
             # Reset the environment if not stopping or re-recording

@@ -26,7 +26,7 @@ record:
     gripper_bin_threshold: 0.98 # threshold to determine gripper is closed
     gripper_port: &gripper_port "/dev/ur5e_left_gripper" # gripper_port
     gripper_reverse: &gripper_reverse False  # If gripper moves opposite, flip this value
-    control_space: "joint" # "force" or "joint"
+    control_space: "force" # "force" or "joint"
     robot_urdf_path: assets/urdf/ur5e.urdf
     force_mode:
       kp: 2000 
@@ -47,10 +47,10 @@ record:
   task:
     description: "Move the reagent bottle to the diagonal position of the bottle rack." # task description
     # description: "Move the test tube from one side of the rack to the other." # task description
-    num_episodes: 100 # number of episodes to record
+    num_episodes: 2 # number of episodes to record
     display: True # Whether to display the data during recording
-    resume: False
-    resume_dataset: scylearning/open_cabinet_place_reagent_bottle_inside_close_cabinet_20251119_v01 # dataset to resume from if resume is True
+    resume: True
+    resume_dataset: scylearning/move_reagent_bottle_20260317_v01 # dataset to resume from if resume is True
 
   time:
     episode_time_sec: 6000 # max time per episode in seconds
@@ -77,9 +77,9 @@ replay:
     gripper_reverse: *gripper_reverse
 
 visualize:
-  dataset_name: scylearning/move_reagent_bottle_20260316_v01
-  episode_index: 0 # episode index to visualize
+  dataset_name: scylearning/move_reagent_bottle_20260317_v01
+  episode_index: 99 # episode index to visualize
 
 check_dataset:
-  dataset_name: scylearning/move_reagent_bottle_20260316_v01
+  dataset_name: scylearning/move_reagent_bottle_20260317_v01
 
