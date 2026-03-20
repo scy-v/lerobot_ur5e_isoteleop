@@ -32,7 +32,8 @@ def get_start_joints(cfg) -> List[float]:
 def compute_joint_offsets(cfg, start_joints: List[float]):
     """Compute offsets for Dynamixel joints to match the UR5e joint positions."""
     
-    driver = DynamixelDriver(cfg.joint_ids, port=cfg.port, baudrate=57600)
+    joint_ids_gripper = cfg.joint_ids + [7]  # Add gripper ID for reading
+    driver = DynamixelDriver(joint_ids_gripper, port=cfg.port, baudrate=57600)
 
     # Warmup reads
     for _ in range(10):
@@ -47,10 +48,13 @@ def compute_joint_offsets(cfg, start_joints: List[float]):
     # Compute best offsets
     curr_joints = driver.get_joints_deg()
     curr_modified_joints = driver.get_positions(cfg.hardware_offsets)
-    logger.info("Dynamixel current joint positions: %s", curr_joints)
-    logger.info("Dynamixel current modified joint positions (rad): %s", curr_modified_joints)
-    logger.info("Dynamixel current modified joint positions (deg): %s", np.rad2deg(curr_modified_joints))
-
+    logger.info("Dynamixel current joint positions (deg): %s", curr_joints[:6])
+    logger.info("UR5e current joint positions (deg) %s", np.rad2deg(start_joints))
+    logger.info("HardWare_offsets (deg): %s", np.rad2deg(start_joints) - curr_joints[:6])
+    logger.info("Dynamixel current gripper positions (rad): %s", np.deg2rad(curr_joints[-1]))
+    logger.info("Dynamixel current modified joint positions (rad): %s", curr_modified_joints[:6])
+    logger.info("Dynamixel current modified joint positions (deg): %s", np.rad2deg(curr_modified_joints[:6]))
+    
     # Close driver
     driver.close()
 
@@ -60,7 +64,7 @@ def compute_joint_offsets(cfg, start_joints: List[float]):
         best_offset = 0
         best_error = float('inf')
         for offset in np.linspace(-8 * np.pi, 8 * np.pi, 33):  # intervals of pi/2
-            error = joint_error(offset, i, curr_modified_joints)
+            error = joint_error(offset, i, curr_modified_joints[:6])
             if error < best_error:
                 best_error = error
                 best_offset = offset

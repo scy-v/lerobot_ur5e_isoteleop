@@ -1,6 +1,7 @@
 record:
-  repo_id: &repo_id "scylearning/move_reagent_bottle" 
-  # repo_id: &repo_id "scylearning/move_test_tube" 
+  # repo_id: &repo_id "scylearning/move_reagent_bottle" 
+  repo_id: &repo_id "scylearning/test" 
+  # repo_id: &repo_id "scylearning/move_test_tube_left_to_right" 
   # repo_id: &repo_id "scylearning/pick_greencube_into_trashbin" 
   # Suggested format: <hf_username>/<description>, description = task.description -> Verb_SourceObject_prep_TargetObject
   # e.g. Pick up the green cube and put it into the trash bin -> pick_greencube_into_trashbin
@@ -12,12 +13,12 @@ record:
     control_mode: "isoteleop"
     dynamixel_config:
       port: "/dev/serial/by-id/usb-FTDI_FT232R_USB_UART_A50285BI-if00-port0"
-      hardware_offsets: [-216.65, -281.865, -233.085, -281.25, 47.11, -158.466] # The Calibration offsets between the master and the slave robot
+      hardware_offsets: [-215.41878271, -391.8146805, -181.22666684, -281.25, 47.11, -158.466] # The Calibration offsets between the master and the slave robot
       use_gripper: &use_gripper True # whether the slave robot can use gripper
       joint_ids: [1, 2, 3, 4, 5, 6]
       joint_offsets: [0.0, 0.0, -3.142, 0.0, 0.0, 0.0]
       joint_signs: [1, 1, -1, 1, 1, 1]
-      gripper_config: [7, 2.5157, 3.4790] # id, min, max
+      gripper_config: [7, -0.619728, 0.3666] # id, min, max
       
   robot:
     ip: &ip "192.168.131.11" # robot_ip
@@ -45,12 +46,12 @@ record:
       gain: 100
 
   task:
-    description: "Move the reagent bottle to the diagonal position of the bottle rack." # task description
-    # description: "Move the test tube from one side of the rack to the other." # task description
-    num_episodes: 2 # number of episodes to record
+    # description: "Move the reagent bottle to the diagonal position of the bottle rack." # task description
+    description: "Move the test tube from one side of the rack to the other." # task description
+    num_episodes: 5 # number of episodes to record
     display: True # Whether to display the data during recording
-    resume: True
-    resume_dataset: scylearning/move_reagent_bottle_20260317_v01 # dataset to resume from if resume is True
+    resume: False
+    resume_dataset: scylearning/move_test_tube_left_to_right_20260318_v01 # dataset to resume from if resume is True
 
   time:
     episode_time_sec: 6000 # max time per episode in seconds
@@ -78,11 +79,11 @@ replay:
 
 visualize:
   dataset_name: scylearning/move_reagent_bottle_20260317_v01
-  episode_index: 100 # episode index to visualize
+  episode_index: 56 # episode index to visualize
 
 check_dataset:
-  dataset_name: scylearning/move_reagent_bottle_20260317_v01
+  dataset_name: scylearning/move_test_tube_left_to_right_20260318_v01
 
 prune_episodes:
-  old_dataset_name: scylearning/move_reagent_bottle_20260317_v01
-  new_dataset_name: scylearning/move_reagent_bottle_20260317_v01_pruned
+  old_dataset_name: scylearning/move_test_tube_left_to_right_20260318_v01
+  new_dataset_name: scylearning/move_test_tube_left_to_right_20260318_v01_pruned

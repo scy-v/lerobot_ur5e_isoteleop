@@ -89,12 +89,16 @@ sudo chmod 666 <your_master_port>
 
 ### 2.4 Obtaining Master–Slave Zero-Offset
 > **⚠️ Note: The `hardware_offsets` in `cfg.yaml` should store the zero-position offsets between the master and slave arm joints to ensure their zero poses match.**
+- Before each operation, align the master arm's test joint angles with the slave arm's, then run the command and read the angles from `HardWare_offsets` into `cfg.yaml`:
+```bash
+utils-joint-offsets
+```
 
 ### 2.5 Obtain Master-Slave Joint Angle Offset Circle
 > **⚠️ WARNING: Before recording data, you must complete this step to set the correct joint offset. Otherwise, the slave arm may move unexpectedly.**
 
 
-Manually move the master arm so that its joint angles roughly match the current joint angles of the slave arm. This is done to calculate the joint angle offset cycle between the master and slave arms. Then run:
+- Manually move the master arm so that its joint angles roughly match the current joint angles of the slave arm. This is done to calculate the joint angle offset cycle between the master and slave arms. Then run:
 ```bash
 utils-joint-offsets
 ```
