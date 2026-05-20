@@ -11,6 +11,8 @@ class UR5eConfig(RobotConfig):
     gripper_reverse: bool = True
     robot_ip: str = "192.168.1.184"
     gripper_port: str = "/dev/ur5e_left_gripper"
+    gripper_force: int = 70
+    gripper_speed: int = 60
     gripper_bin_threshold: float = 0.98
     debug: bool = True
     close_threshold: float = 0.7
@@ -25,8 +27,15 @@ class UR5eConfig(RobotConfig):
     look_ahead_time: int = 0.2
     dt: int = 0.002
     gain: int = 100
+    tcp_position_speed: float = 0.5
+    tcp_position_acceleration: float = 0.5
+    tcp_position_servo_time: float = 0.1
+    tcp_position_lookahead_time: float = 0.1
+    tcp_position_gain: int = 300
     pos_delta: int = 0.2
     vel_delta: int = 0.4
     gain_scale: int = 1.5
-    control_space: str="force" # "joint" or "force"
+    control_space: str = "joint_to_tcp_force"  # "joint", "joint_to_tcp_force", "tcp_force", or "tcp_position"
+    tcp_force_reference_frame: str = "base"  # "base" or "tcp"; only used when control_space is "tcp_force"
+    tcp_position_reference_frame: str = "base"  # "base" or "tcp"; only used when control_space is "tcp_position"
     cameras: dict[str, CameraConfig] = field(default_factory=dict)

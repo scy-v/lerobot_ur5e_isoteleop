@@ -10,6 +10,7 @@ setup(
     install_requires=[
         "pydhgripper",
         "pyrealsense2",
+        "pin==3.8.0",
         "ur-rtde",
         "scipy",
     ],

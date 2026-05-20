@@ -19,6 +19,9 @@ from pathlib import Path
 from .dynamixel.dynamixel_robot import DynamixelRobot
 from typing import Any, Dict
 import yaml
+import numpy as np
+import pinocchio as pin
+from scipy.spatial.transform import Rotation as R
 from lerobot.utils.errors import DeviceNotConnectedError
 from lerobot.teleoperators.teleoperator import Teleoperator
 from .config_teleop import UR5eTeleopConfig
@@ -36,6 +39,8 @@ class UR5eTeleop(Teleoperator):
         super().__init__(config)
         self.cfg = config
         self._is_connected = False
+        self.robot = None
+        self.urdf_path = Path(__file__).parents[2] / self.cfg.robot_urdf_path
 
     @property
     def action_features(self) -> dict:
@@ -53,8 +58,29 @@ class UR5eTeleop(Teleoperator):
     def is_calibrated(self) -> bool:
         pass
 
+    def set_robot(self, robot) -> None:
+        self.robot = robot
+
     def connect(self) -> None:
+        if self.cfg.control_space not in ("joint", "joint_to_tcp_force", "tcp_force", "tcp_position"):
+            raise ValueError(
+                f"Unsupported control_space: {self.cfg.control_space}. "
+                "Expected 'joint', 'joint_to_tcp_force', 'tcp_force', or 'tcp_position'."
+            )
+        if self.cfg.control_space == "tcp_force" and self.cfg.tcp_force_reference_frame not in ("base", "tcp"):
+            raise ValueError(
+                f"Unsupported tcp_force.reference_frame: {self.cfg.tcp_force_reference_frame}. "
+                "Expected 'base' or 'tcp'."
+            )
+        if self.cfg.control_space == "tcp_position" and self.cfg.tcp_position_reference_frame not in ("base", "tcp"):
+            raise ValueError(
+                f"Unsupported tcp_position.reference_frame: {self.cfg.tcp_position_reference_frame}. "
+                "Expected 'base' or 'tcp'."
+            )
+
         self._check_dynamixel_connection()
+        if self.cfg.control_space in ("tcp_force", "tcp_position"):
+            self._init_pinocchio(self.urdf_path, base_frame="base", ee_frame="tool0")
         self._is_connected = True
         logger.info(f"[INFO] {self.name} env initialization completed successfully.\n")
 
@@ -81,7 +107,73 @@ class UR5eTeleop(Teleoperator):
         pass
 
     def get_action(self) -> dict[str, Any]:
+        if self.cfg.control_space in ("tcp_force", "tcp_position"):
+            return self._get_delta_action()
+
         return self.dynamixel_robot.get_observations()
+
+    def _init_pinocchio(self, urdf_path: str, base_frame: str = "base", ee_frame: str = "tool0"):
+        self.model = pin.buildModelFromUrdf(urdf_path)
+        self.base_frame = base_frame
+        self.ee_frame = ee_frame
+        self.base_id = self.model.getFrameId(base_frame)
+        self.ee_frame_id = self.model.getFrameId(ee_frame)
+        self.data = self.model.createData()
+
+    def _fk(self, joint_positions):
+        q = np.array(joint_positions)
+        pin.forwardKinematics(self.model, self.data, q)
+        pin.updateFramePlacements(self.model, self.data)
+
+        m_tool = self.data.oMf[self.ee_frame_id]
+        m_base = self.data.oMf[self.base_id]
+        m_rel = m_base.inverse() * m_tool
+        position = m_rel.translation
+        rotvec = pin.log3(m_rel.rotation)
+        return np.concatenate([position, rotvec])
+
+    def _get_delta_action(self) -> dict[str, Any]:
+        if self.robot is None:
+            raise ValueError(f"{self.cfg.control_space} requires a robot object on teleop.")
+
+        observations = self.dynamixel_robot.get_observations()
+        joint_positions = np.array([observations[f"joint_{i+1}.pos"] for i in range(6)], dtype=float)
+        target_ee_pose = self._fk(joint_positions)
+        current_ee_pose = np.array(self.robot.get_ee_pose(), dtype=float)
+
+        target_position = np.array(target_ee_pose[:3], dtype=float)
+        current_position = np.array(current_ee_pose[:3], dtype=float)
+        target_rotation = R.from_rotvec(target_ee_pose[3:]).as_matrix()
+        current_rotation = R.from_rotvec(current_ee_pose[3:]).as_matrix()
+
+        reference_frame = (
+            self.cfg.tcp_force_reference_frame
+            if self.cfg.control_space == "tcp_force"
+            else self.cfg.tcp_position_reference_frame
+        )
+
+        if reference_frame == "base":
+            delta_position = target_position - current_position
+            delta_rotation = target_rotation @ current_rotation.T
+        elif reference_frame == "tcp":
+            delta_position = current_rotation.T @ (target_position - current_position)
+            delta_rotation = current_rotation.T @ target_rotation
+        else:
+            raise ValueError(f"Unsupported {self.cfg.control_space}.reference_frame: {reference_frame}")
+
+        delta_euler = R.from_matrix(delta_rotation).as_euler("xyz")
+
+        action = {
+            "delta_x": float(delta_position[0]),
+            "delta_y": float(delta_position[1]),
+            "delta_z": float(delta_position[2]),
+            "delta_rx": float(delta_euler[0]),
+            "delta_ry": float(delta_euler[1]),
+            "delta_rz": float(delta_euler[2]),
+        }
+        if "gripper_position" in observations:
+            action["gripper_position"] = observations["gripper_position"]
+        return action
 
     def send_feedback(self, feedback: dict[str, Any]) -> None:
         pass

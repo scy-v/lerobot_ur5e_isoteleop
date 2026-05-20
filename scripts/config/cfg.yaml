@@ -1,7 +1,6 @@
 record:
-  # repo_id: &repo_id "scylearning/move_reagent_bottle" 
   repo_id: &repo_id "scylearning/test" 
-  # repo_id: &repo_id "scylearning/move_test_tube_left_to_right" 
+  # repo_id: &repo_id "scylearning/move_test_tube" 
   # repo_id: &repo_id "scylearning/pick_greencube_into_trashbin" 
   # Suggested format: <hf_username>/<description>, description = task.description -> Verb_SourceObject_prep_TargetObject
   # e.g. Pick up the green cube and put it into the trash bin -> pick_greencube_into_trashbin
@@ -13,21 +12,32 @@ record:
     control_mode: "isoteleop"
     dynamixel_config:
       port: "/dev/serial/by-id/usb-FTDI_FT232R_USB_UART_A50285BI-if00-port0"
-      hardware_offsets: [-215.41878271, -391.8146805, -181.22666684, -281.25, 47.11, -158.466] # The Calibration offsets between the master and the slave robot
+      hardware_offsets: [-165.849, -33.749, -365.186, -279.843, -313.331, -157.94] # The Calibration offsets between the master and the slave robot
       use_gripper: &use_gripper True # whether the slave robot can use gripper
       joint_ids: [1, 2, 3, 4, 5, 6]
-      joint_offsets: [0.0, 0.0, -3.142, 0.0, 0.0, 0.0]
+      joint_offsets: [0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
       joint_signs: [1, 1, -1, 1, 1, 1]
-      gripper_config: [7, -0.619728, 0.3666] # id, min, max
+      gripper_config: [7, -0.612058, 0.374291] # id, min, max from utils-joint-offsets
       
   robot:
-    ip: &ip "192.168.131.11" # robot_ip
+    ip: &ip "192.168.201.11" # robot_ip
     use_gripper: *use_gripper
     close_threshold: 0.7 # threshold to determine gripper open/close
     gripper_bin_threshold: 0.98 # threshold to determine gripper is closed
     gripper_port: &gripper_port "/dev/ur5e_left_gripper" # gripper_port
     gripper_reverse: &gripper_reverse False  # If gripper moves opposite, flip this value
-    control_space: "force" # "force" or "joint"
+    gripper_force: &gripper_force 70 # gripper force command
+    gripper_speed: &gripper_speed 60 # gripper speed command
+    control_space: "tcp_force" # "joint", "joint_to_tcp_force", "tcp_force", or "tcp_position"
+    tcp_force:
+      reference_frame: "tcp" # "base" or "tcp"; only used when control_space is "tcp_force"
+    tcp_position:
+      reference_frame: "base" # "base" or "tcp"; only used when control_space is "tcp_position"
+      speed: 0.5
+      acceleration: 0.5
+      servo_time: 0.1
+      lookahead_time: 0.1
+      gain: 300
     robot_urdf_path: assets/urdf/ur5e.urdf
     force_mode:
       kp: 2000 
@@ -46,12 +56,12 @@ record:
       gain: 100
 
   task:
-    # description: "Move the reagent bottle to the diagonal position of the bottle rack." # task description
-    description: "Move the test tube from one side of the rack to the other." # task description
+    description: "Move the reagent bottle to the diagonal position of the bottle rack." # task description
+    # description: "Move the test tube from one side of the rack to the other." # task description
     num_episodes: 5 # number of episodes to record
     display: True # Whether to display the data during recording
     resume: False
-    resume_dataset: scylearning/move_test_tube_left_to_right_20260318_v01 # dataset to resume from if resume is True
+    resume_dataset: scylearning/move_reagent_bottle_20260317_v01 # dataset to resume from if resume is True
 
   time:
     episode_time_sec: 6000 # max time per episode in seconds
@@ -59,10 +69,10 @@ record:
     save_meta_period: 1 # Save metadata after every N episodes
 
   cameras:
-    wrist_cam_serial: "151222071369" # wrist camera serial number
-    exterior_cam_serial: "151322070364" # exterior camera serial number
-    width: 424 # 640 424
-    height: 240 # 360 240
+    wrist_cam_serial: "944622073455" # wrist camera serial number
+    exterior_cam_serial: "213522072373" # exterior camera serial number
+    width: 640 # 640 424
+    height: 480 # 360 240
 
   storage:
     push_to_hub: False # whether to push the dataset to your huggingface repo after recording
@@ -76,14 +86,19 @@ replay:
     gripper_port: *gripper_port
     use_gripper: *use_gripper
     gripper_reverse: *gripper_reverse
+    gripper_force: *gripper_force
+    gripper_speed: *gripper_speed
 
 visualize:
-  dataset_name: scylearning/move_reagent_bottle_20260317_v01
-  episode_index: 56 # episode index to visualize
+  dataset_name: scylearning/test_20260520_v02
+  episode_index: 0 # episode index to visualize
+  default_obs_group: "tcp_pose" # default observation group shown in the data window
+  data_window: True # open a local browser window for per-frame action and selected observation data
+  print_to_terminal: False # also print per-frame data to terminal
 
 check_dataset:
   dataset_name: scylearning/move_test_tube_left_to_right_20260318_v01
 
 prune_episodes:
-  old_dataset_name: scylearning/move_test_tube_left_to_right_20260318_v01
-  new_dataset_name: scylearning/move_test_tube_left_to_right_20260318_v01_pruned
+  old_dataset_name: scylearning/move_reagent_bottle_20260317_v01
+  new_dataset_name: scylearning/move_reagent_bottle_20260317_v01_pruned

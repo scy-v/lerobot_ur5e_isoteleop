@@ -1,10 +1,10 @@
-# UR5e Master-Slave Teleoperation Data Collection
+# UR5e/UR7e Master-Slave Teleoperation Data Collection
 <p align="center">
   <img src="assets/robot.png" alt="Record" width="600">
   <br>
 </p>
 
-## 1. Environment Setup
+## 🛠️ 1. Environment Setup
 ### 1.1 Create and Activate Conda Environment
 ```bash
 conda create -n ur_data python=3.10
@@ -42,6 +42,7 @@ ur5e-help
 #   ur5e-visualize        Visualize recorded dataset
 
 # Utility Commands:
+#   utils-hardware-offsets  Compute hardware offsets between raw UR5e and Dynamixel joints
 #   utils-joint-offsets   Compute joint offsets for teleoperation
 
 # Tool Commands:
@@ -62,7 +63,7 @@ ur5e-help
 # ==================================================
 ```
 
-## 2. Obtain and Configure Necessary Parameters
+## ⚙️ 2. Obtain and Configure Necessary Parameters
 
 ### 2.1 Get RealSense Camera Serial Number
 Please make sure only one camera is connected at a time.
@@ -88,23 +89,40 @@ sudo chmod 666 <your_master_port>
 ```
 
 ### 2.4 Obtaining Master–Slave Zero-Offset
-> **⚠️ Note: The `hardware_offsets` in `cfg.yaml` should store the zero-position offsets between the master and slave arm joints to ensure their zero poses match.**
-- Before each operation, align the master arm's test joint angles with the slave arm's, then run the command and read the angles from `HardWare_offsets` into `cfg.yaml`:
+> **⚠️ Note: The `hardware_offsets` in `cfg.yaml` store hardware zero-position offsets between the master and slave arm joints, with `joint_signs` handling joint direction.**
+
+Follow the terminal prompts to compute each joint from the first joint onward. Keep the current master/slave joint at approximately the same angle, then press Enter; the script reads the raw UR5e joint angle and the raw unmodified Dynamixel joint angle, then prints that joint's `hardware_offset`:
 ```bash
-utils-joint-offsets
+utils-hardware-offsets
 ```
+Copy the final `hardware_offsets` output into the corresponding field in `cfg.yaml`.
 
 ### 2.5 Obtain Master-Slave Joint Angle Offset Circle
-> **⚠️ WARNING: Before recording data, you must complete this step to set the correct joint offset. Otherwise, the slave arm may move unexpectedly.**
+> **⚠️ WARNING: `joint_offsets` align the numeric angle cycle between the master and slave joints; they do not correct hardware zero-position errors. Check them before recording, otherwise the slave arm may move unexpectedly.**
 
 
-- Manually move the master arm so that its joint angles roughly match the current joint angles of the slave arm. This is done to calculate the joint angle offset cycle between the master and slave arms. Then run:
+Complete `hardware_offsets` calibration first, then manually move the master arm so that its joint angles roughly match the current joint angles of the slave arm. Then run:
 ```bash
 utils-joint-offsets
 ```
 Copy the resulting `joint_offsets` into the corresponding fields in `cfg.yaml`.
 
-## 3. Dataset Recording
+### 2.6 Configure Control Space
+Open `scripts/config/cfg.yaml` and check the robot IP, gripper port, camera serial numbers, control mode, and camera resolution.
+
+Key robot fields:
+- `control_space`: `"joint"`, `"joint_to_tcp_force"`, `"tcp_force"`, or `"tcp_position"`.
+  - `joint`: the master action is joint angles, and the slave arm uses `servoJ` joint-position control.
+  - `joint_to_tcp_force`: the master action is joint angles, converted through URDF forward kinematics into a target end-effector pose, and the slave arm follows it with `forceMode`.
+  - `tcp_force`: the master action is an end-effector delta, and the slave arm follows it with `forceMode`.
+  - `tcp_position`: the master action is an end-effector delta, and the slave arm executes it with `servoL`.
+- `tcp_force.reference_frame` / `tcp_position.reference_frame`: `"base"` or `"tcp"`, used only by the corresponding `tcp_force` / `tcp_position` mode.
+  - `base`: action delta is expressed in the base frame, and `tcp_pose` observation is the absolute EE/tool0 pose.
+  - `tcp`: action delta is expressed in the current end-effector frame, and `tcp_pose` observation is relative to the episode reference pose.
+  - To avoid inconsistent coordinates caused by temporary TCP-offset changes on the UR teach pendant, `tcp_pose` is converted from UR TCP pose and TCP offset into EE/tool0 pose.
+  - `joint` and `joint_to_tcp_force` do not read `reference_frame`; their `tcp_pose` observation is the absolute EE/tool0 pose.
+
+## 📥 3. Dataset Recording
 
 ### 3.1 Upload Data to Hugging Face (Optional)
 1. Set the following in `cfg.yaml`:
@@ -118,9 +136,11 @@ huggingface-cli whoami  # Verify successful login
 ```
 
 ### 3.2 Start Recording
+> **⚠️ Recommended: Set TCP Position to `[0, 0, 0, 0, 0, 0]` on the UR teach pendant to use EE/tool0 as a fixed end-effector frame, avoid inconsistent end-effector frames caused by temporary TCP changes, and support later model training.**
+
 1. Turn on **Remote Control** on the UR5e teach pendant.  
 2. Verify that the parameters in `cfg.yaml` are correct.  
-3. To ensure standardized data collection, please read `9. Dataset Naming and Recording Details` before running the following command:
+3. To ensure standardized data collection, please read `10. Dataset Naming and Recording Details` before running the following command:
 ```bash
 ur5e-record
 ```
@@ -131,29 +151,38 @@ ur5e-record
   <b>Figure 1: Record</b>
 </p>
 
-## 4. Dataset Replay
+## ▶️ 4. Dataset Replay
 ```bash
 ur5e-replay # Make sure cfg.yaml is properly configured
 ```
 
-## 5. Dataset Visualization
+## 📊 5. Dataset Visualization
 ```bash
 ur5e-visualize # Make sure cfg.yaml is properly configured
 ```
+
+<p align="center">
+  <img src="assets/episode_data.png" alt="Episode Data" width="600">
+  <br>
+  <b>Figure 2: Episode Data Window</b>
+</p>
+
 <p align="center">
   <img src="assets/visualize.png" alt="Visualization" width="600">
   <br>
-  <b>Figure 2: Visualization</b>
+  <b>Figure 3: Visualization</b>
 </p>
 
-## 6. Dataset Appending and Resume
+The data window shows the action for each frame and lets you select one observation group at a time, such as `tcp_pose`, `tcp_force`, or joint states.
+
+## ➕ 6. Dataset Appending and Resume
 If you have already recorded a dataset under the specified `repo_id`, set `resume: True` in `cfg.yaml` and enter the dataset name in `resume_dataset` to continue recording new data on the existing dataset. Then, run the following command:
 
 ```bash
 ur5e-record
 ```
 
-## 7. Merge Datasets
+## 🔗 7. Merge Datasets
 If you recorded data in multiple stages, ensure each dataset has a unique `repo_id`. Use the following command to merge them into a single dataset:
 ```bash
 lerobot-edit-dataset 
@@ -163,7 +192,7 @@ lerobot-edit-dataset
 ```
 - For more dataset processing commands, see [LeRobot](https://huggingface.co/docs/lerobot/using_dataset_tools).
 
-## 8. Dataset Check and Pruning
+## ✅ 8. Dataset Check and Pruning
 - Run the following command to verify dataset integrity, especially for missing video frames:
 - Note update `check_dataset.dataset_name` in cfg.yaml.
 ```bash
@@ -175,7 +204,7 @@ tools-check-dataset
 tools-prune-dataset "[id1,...,idN]"
 ```
 - This tool can remove episodes with missing frames or any specified episodes.
-## 9. Recording Control Keys
+## ⌨️ 9. Recording Control Keys
 
 1. **Right Arrow Key**  
    1. Press the right arrow key: end the current episode and save the data. The program will pause.  
@@ -191,18 +220,18 @@ tools-prune-dataset "[id1,...,idN]"
 4. **Ctrl+C or Exception**
    - Pressing or on exception: enters exception handling and asks whether to delete the incomplete dataset.
   
-## 10. Dataset Naming and Recording Details
+## 🗂️ 10. Dataset Naming and Recording Details
 ### 1. Dataset Naming
 <p align="center">
   <img src="assets/dataset.png" alt="dataset" width="600">
   <br>
-  <b>Figure 3: Dataset</b>
+  <b>Figure 4: Dataset</b>
 </p>
 
 <p align="center">
   <img src="assets/dataset_info.png" alt="dataset_info" width="600">
   <br>
-  <b>Figure 4: Dataset Info</b>
+  <b>Figure 5: Dataset Info</b>
 </p>
 
 1. The dataset is by default stored in the `~/.cache/huggingface/lerobot` directory and contains three types of items:

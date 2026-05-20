@@ -11,6 +11,9 @@ setup(
     python_requires=">=3.10",
     packages=find_packages(where=".", include=["scripts*", "scripts.*"]),
     include_package_data=True,
+    install_requires=[
+        "send2trash",
+    ],
     scripts=[
         "scripts/tools/map_gripper.sh",
         "scripts/tools/check_master_port.sh",
@@ -22,6 +25,7 @@ setup(
             "ur5e-replay = scripts.core.run_replay:main",
             "ur5e-visualize = scripts.core.run_visualize:main",
             # utils commands (data utilities)
+            "utils-hardware-offsets = scripts.utils.teleop_hardware_offsets:main",
             "utils-joint-offsets = scripts.utils.teleop_joint_offsets:main",
 
             # tools commands (helper tools)

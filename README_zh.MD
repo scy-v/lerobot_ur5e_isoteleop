@@ -1,10 +1,10 @@
-# UR5e 同构遥操作数据采集与回放指南
+# UR5e/UR7e 同构遥操作数据采集与回放指南
 <p align="center">
   <img src="assets/robot.png" alt="Record" width="600">
   <br>
 </p>
 
-## 1. 环境配置
+## 🛠️ 1. 环境配置
 
 ### 1.1 创建并激活 conda 环境
 ```bash
@@ -43,6 +43,7 @@ ur5e-help
 #   ur5e-visualize        Visualize recorded dataset
 
 # Utility Commands:
+#   utils-hardware-offsets  Compute hardware offsets between raw UR5e and Dynamixel joints
 #   utils-joint-offsets   Compute joint offsets for teleoperation
 
 # Tool Commands:
@@ -62,7 +63,7 @@ ur5e-help
 #  Tip: Use 'ur5e-help' anytime to see this summary.
 # ==================================================
 ```
-## 2. 获取和配置必要参数
+## ⚙️ 2. 获取和配置必要参数
 
 ### 2.1 获取 RealSense 相机序列号
 请确保每次仅连接一个相机:
@@ -87,21 +88,39 @@ sudo chmod 666 <your_master_port>
 ```
 
 ### 2.4 获取主臂-从臂的零点偏差
-> **⚠️ 注意：cfg.yaml中的`hardware_offsets`应保存你的主从臂各关节之间的零点偏差角度，以确保主从臂零点关节姿态完全一致。**
-每次执行此操作前，请单独拖动主臂，使其测试关节角与从臂测试关节角尽量保持一致，然后运行以下命令并读取 `HardWare_offsets` 中对应的角度值填入`cfg.yaml`中:
+> **⚠️ 注意：cfg.yaml 中的 `hardware_offsets` 用于保存主从臂各关节的硬件零点偏差角度，并会结合 `joint_signs` 处理关节方向。**
+
+请按照终端提示从第一个关节开始逐个计算。每次让主从臂当前关节保持近似同一角度后按 Enter，脚本会读取 UR5e 原始关节角和 Dynamixel 原始未修正关节角，并输出该关节的 `hardware_offset`：
 ```bash
-utils-joint-offsets
+utils-hardware-offsets
 ```
+随后，请将脚本最终输出的 `hardware_offsets` 值填入 `cfg.yaml` 中的对应配置项。
+ 
 ### 2.5 获取主臂-从臂关节角的误差周期
-> **⚠️ 注意：在记录数据前，务必完成此步骤以设置正确的误差周期。否则，从臂可能发生意外的动作。**
+> **⚠️ 注意：`joint_offsets` 用于对齐主从臂关节角的数值周期，不用于修正硬件零点误差。记录数据前请确认该值正确，否则从臂可能发生意外动作。**
 
-在执行此操作前，请先手动拖动主臂，使其关节角与从臂的当前关节角尽量保持一致。然后运行以下命令来计算主臂与从臂关节角的误差周期：
+在执行此操作前，请先完成 `hardware_offsets` 标定，并手动拖动主臂，使其关节角与从臂当前关节角尽量保持一致。然后运行以下命令计算主从臂关节角的周期偏移：
 ```bash
 utils-joint-offsets
 ```
-随后，请将脚本输出的`joint_offsets`值填入`cfg.yaml`中的对应配置项
+随后，请将脚本输出的 `joint_offsets` 值填入 `cfg.yaml` 中的对应配置项。
 
-## 3. 数据集记录
+### 2.6 配置控制空间
+打开 `scripts/config/cfg.yaml` 文件，检查机器人 IP、夹爪串口、相机序列号、控制模式和相机分辨率等参数。
+
+关键机器人字段：
+- `control_space`：`"joint"`、`"joint_to_tcp_force"`、`"tcp_force"` 或 `"tcp_position"`。
+  - `joint`：主臂 action 为关节角，从臂通过 `servoJ` 执行关节位置控制。
+  - `joint_to_tcp_force`：主臂 action 为关节角，经 URDF 正运动学转换为目标末端位姿，从臂通过 `forceMode` 跟随。
+  - `tcp_force`：主臂 action 为末端 delta，从臂通过 `forceMode` 跟随。
+  - `tcp_position`：主臂 action 为末端 delta，从臂通过 `servoL` 执行末端位置控制。
+- `tcp_force.reference_frame` / `tcp_position.reference_frame`：`"base"` 或 `"tcp"`，仅在对应的 `tcp_force` / `tcp_position` 模式下生效。
+  - `base`：action 增量在 base 坐标系下表达，`tcp_pose` 观测为 EE/tool0 绝对位姿。
+  - `tcp`：action 增量在当前末端坐标系下表达，`tcp_pose` 观测为相对 episode 参考位姿的变化量。
+  - 为避免 UR 示教器 TCP offset 临时修改导致坐标定义不一致，`tcp_pose` 字段由 UR TCP pose 和 TCP offset 转换得到 EE/tool0 位姿。
+  - `joint` 和 `joint_to_tcp_force` 不读取 `reference_frame`，`tcp_pose` 观测为 EE/tool0 绝对位姿。
+
+## 📥 3. 数据集记录
 
 ### 3.1 上传数据到 Hugging Face（可选）
 1. 在 `cfg.yaml` 中设置：
@@ -115,9 +134,11 @@ huggingface-cli whoami  # 检查是否登录成功
 ```
 
 ### 3.2 开始记录
+> **⚠️ 建议：在 UR 示教器中将 TCP Position 设置为 `[0, 0, 0, 0, 0, 0]`，以固定 EE/tool0 为末端坐标系，防止因 TCP 临时修改造成末端坐标系不一致，便于后续模型训练。**
+
 1. 打开 UR5e 示教器上的 **Remote Control**。
 2. 确认 `cfg.yaml` 中参数配置正确。
-3. 为了确保数据收集过程规范，请先阅读 `9. 数据集命名与记录详解` 以了解数据记录细节，然后再运行以下命令：
+3. 为了确保数据收集过程规范，请先阅读 `10. 数据集命名与记录详解` 以了解数据记录细节，然后再运行以下命令：
 ```bash
 ur5e-record
 ```
@@ -127,28 +148,37 @@ ur5e-record
   <b>Figure 1: Record</b>
 </p>
 
-## 4. 数据集回放
+## ▶️ 4. 数据集回放
 ```bash
 ur5e-replay #注意cfg配置
 ```
 
-## 5. 数据集可视化
+## 📊 5. 数据集可视化
 ```bash
 ur5e-visualize #注意cfg配置
 ```
+
+<p align="center">
+  <img src="assets/episode_data.png" alt="Episode Data" width="600">
+  <br>
+  <b>Figure 2: Episode 数据窗口</b>
+</p>
+
 <p align="center">
   <img src="assets/visualize.png" alt="Visualization" width="600">
   <br>
-  <b>Figure 2: Visualization</b>
+  <b>Figure 3: Visualization</b>
 </p>
 
-## 6. 数据集追加与恢复
+Episode 数据窗口会显示每一帧的完整 action，并支持选择单个 observation 组进行查看，例如 `tcp_pose`、`tcp_force` 或各关节状态。
+
+## ➕ 6. 数据集追加与恢复
 如果你已经在指定的 `repo_id` 下录制过数据集，可以在 `cfg.yaml` 中将 `resume` 设置为 `True`，并在 `resume_dataset` 中填写要追加的数据集名称，以便在现有数据集的基础上继续录制。然后运行以下命令：
 ```bash
 ur5e-record
 ```
 
-## 7. 数据集合并
+## 🔗 7. 数据集合并
 如果你在不同阶段分别录制了数据集，请确保各阶段的数据集具有不同的 `repo_id`, 完成录制后，可通过以下命令将它们合并为一个数据集: 
 ```bash
 lerobot-edit-dataset 
@@ -158,7 +188,7 @@ lerobot-edit-dataset
 ```
 - 更多数据集处理命令，请参考 [LeRobot](https://huggingface.co/docs/lerobot/using_dataset_tools)
 
-## 8. 数据集检查与裁剪
+## ✅ 8. 数据集检查与裁剪
 - 使用以下命令检查数据集读取是否正确，尤其是视频帧缺失情况：
 - 注意修改cfg.yaml中 `check_dataset.dataset_name`
 ```bash
@@ -171,7 +201,7 @@ tools-prune-dataset "[id1,..., idN]"
 ```
 - 该工具可删除视频帧缺失以及正常的数据索引。
   
-## 9. 录制控制按键说明
+## ⌨️ 9. 录制控制按键说明
 1. **右方向键**  
    1. 按下右方向键: 结束当前 episode 的录制并保存数据，程序将暂停等待。
    2. 进入**复位**阶段: 按回车键以继续（此时从臂会直接跟随主臂运动），请通过主臂将从臂复位至初始位姿。
@@ -185,18 +215,18 @@ tools-prune-dataset "[id1,..., idN]"
 4. **Ctrl+c或抛出异常**
    - 按下或发生异常时：自动进入异常处理阶段，提示用户是否删除当前未完成的录制数据
   
-## 10. 数据集命名与记录详解
+## 🗂️ 10. 数据集命名与记录详解
 ### 1. 数据集命名
 <p align="center">
   <img src="assets/dataset.png" alt="dataset" width="600">
   <br>
-  <b>Figure 3: Dataset</b>
+  <b>Figure 4: Dataset</b>
 </p>
 
 <p align="center">
   <img src="assets/dataset_info.png" alt="dataset_info" width="600">
   <br>
-  <b>Figure 4: Dataset Info</b>
+  <b>Figure 5: Dataset Info</b>
 </p>
 
 1. 数据集默认保存在 `~/.cache/huggingface/lerobot` 目录下，包含三类内容：

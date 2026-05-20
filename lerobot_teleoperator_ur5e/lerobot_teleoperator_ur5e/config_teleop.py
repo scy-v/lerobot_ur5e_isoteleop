@@ -14,3 +14,7 @@ class UR5eTeleopConfig(TeleoperatorConfig):
     joint_signs: list[int]
     gripper_config: tuple[int, float, float]
     control_mode: str = "isoteleop"
+    control_space: str = "joint_to_tcp_force"
+    tcp_force_reference_frame: str = "base"
+    tcp_position_reference_frame: str = "base"
+    robot_urdf_path: str = "assets/urdf/ur5e.urdf"

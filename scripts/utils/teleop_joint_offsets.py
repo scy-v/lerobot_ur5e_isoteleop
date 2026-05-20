@@ -32,8 +32,11 @@ def get_start_joints(cfg) -> List[float]:
 def compute_joint_offsets(cfg, start_joints: List[float]):
     """Compute offsets for Dynamixel joints to match the UR5e joint positions."""
     
-    joint_ids_gripper = cfg.joint_ids + [7]  # Add gripper ID for reading
-    driver = DynamixelDriver(joint_ids_gripper, port=cfg.port, baudrate=57600)
+    dxl_ids = list(cfg.joint_ids)
+    if cfg.use_gripper and cfg.gripper_config is not None:
+        dxl_ids.append(cfg.gripper_config[0])
+
+    driver = DynamixelDriver(dxl_ids, port=cfg.port, baudrate=57600)
 
     # Warmup reads
     for _ in range(10):
@@ -48,13 +51,16 @@ def compute_joint_offsets(cfg, start_joints: List[float]):
     # Compute best offsets
     curr_joints = driver.get_joints_deg()
     curr_modified_joints = driver.get_positions(cfg.hardware_offsets)
-    logger.info("Dynamixel current joint positions (deg): %s", curr_joints[:6])
-    logger.info("UR5e current joint positions (deg) %s", np.rad2deg(start_joints))
-    logger.info("HardWare_offsets (deg): %s", np.rad2deg(start_joints) - curr_joints[:6])
-    logger.info("Dynamixel current gripper positions (rad): %s", np.deg2rad(curr_joints[-1]))
-    logger.info("Dynamixel current modified joint positions (rad): %s", curr_modified_joints[:6])
-    logger.info("Dynamixel current modified joint positions (deg): %s", np.rad2deg(curr_modified_joints[:6]))
-    
+    logger.info("Dynamixel current joint positions: %s", curr_joints)
+    logger.info("Dynamixel current modified joint positions (rad): %s", curr_modified_joints)
+    logger.info("Dynamixel current modified joint positions (deg): %s", np.rad2deg(curr_modified_joints))
+    if cfg.use_gripper and len(curr_joints) > len(cfg.joint_ids):
+        logger.info(
+            "Dynamixel gripper current position: %.3f deg (%.6f rad)",
+            curr_joints[-1],
+            np.deg2rad(curr_joints[-1]),
+        )
+
     # Close driver
     driver.close()
 
@@ -84,9 +90,11 @@ class RecordConfig:
 
         # Teleop config
         self.port = dxl_cfg["port"]
+        self.use_gripper = dxl_cfg["use_gripper"]
         self.joint_ids = dxl_cfg["joint_ids"]
         self.joint_signs = dxl_cfg["joint_signs"]
         self.hardware_offsets = dxl_cfg["hardware_offsets"]
+        self.gripper_config = dxl_cfg.get("gripper_config")
 
         # Robot config
         self.robot_ip: str = robot["ip"]

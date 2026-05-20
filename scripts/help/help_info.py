@@ -10,6 +10,7 @@ Core Commands:
   ur5e-visualize        Visualize recorded dataset
 
 Utility Commands:
+  utils-hardware-offsets  Compute hardware offsets between raw UR5e and Dynamixel joints
   utils-joint-offsets   Compute joint offsets for teleoperation
 
 Tool Commands:
